@@ -6,7 +6,7 @@ Slug: angr-tips-and-tricks
 
 ## Introduction 
 
-This post aimes to be the first in a series where I document my journey in learning [angr](https://github.com/angr/angr) to solve real-world problems. At first, CTF challenges will be used as examples, the goal being to learn to handle more and more corner cases as I am making progress.
+This post aims to be the first in a series where I document my journey in learning [angr](https://github.com/angr/angr) to solve real-world problems. At first, CTF challenges will be used as examples, the goal being to learn to handle more and more corner cases as I am making progress.
 
 Learning to use [angr](https://github.com/angr/angr) effectively was a personal objective I had in mind for the past year. Unfortunately, the examples I found online were either too old, too simple or too complicated. In view of that, an emphasis will be put on explaining solutions to every problem encountered or potential gotchas.
 
@@ -522,4 +522,4 @@ Of course, solving that task by hand would have been way faster. The goal was to
 
 Interestingly, the test binary can be compiled for another architecture and the same [angr](https://github.com/angr/angr) script can be used to solve it, which demonstrates the power of such mature frameworks.
 
-In the next posts, we will further explor [angr](https://github.com/angr/angr)'s capabilities with another, harder CTF challenge.
+In the next posts, we will further explore [angr](https://github.com/angr/angr)'s capabilities with another, harder CTF challenge.
