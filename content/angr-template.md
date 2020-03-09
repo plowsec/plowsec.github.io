@@ -1,7 +1,7 @@
 Title: Getting acquainted with angr
 Date: 2020-03-09
 Slug: angr-tips-and-tricks
-
+Summary: This post aims to be the first in a series where I document my journey in learning [angr](https://github.com/angr/angr) to solve real-world problems.
 [TOC]
 
 ## Introduction 
