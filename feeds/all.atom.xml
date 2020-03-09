@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>plowsec</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2020-03-09T00:00:00+01:00</updated><entry><title>Getting acquainted with angr</title><link href="/angr-tips-and-tricks.html" rel="alternate"></link><published>2020-03-09T00:00:00+01:00</published><updated>2020-03-09T00:00:00+01:00</updated><author><name>plowsec</name></author><id>tag:None,2020-03-09:/angr-tips-and-tricks.html</id><summary type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#introduction"&gt;Introduction&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#about-this-posts-content"&gt;About this post&amp;#8217;s&amp;nbsp;content&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#test-binary"&gt;Test&amp;nbsp;binary&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#reverse-engineering"&gt;Reverse-engineering&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#angr-101"&gt;angr&amp;nbsp;101&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#when-angr-is-taking-forever"&gt;When angr is taking&amp;nbsp;forever&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#optimizing"&gt;Optimizing&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#final-solution"&gt;Final&amp;nbsp;solution&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#conclusion"&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
-&lt;p&gt;This post aims to be the first in a series where I document my journey in learning &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve real-world problems. At first, &lt;span class="caps"&gt;CTF&lt;/span&gt; challenges …&lt;/p&gt;</summary><content type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>plowsec</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2020-03-09T00:00:00+01:00</updated><entry><title>Getting acquainted with angr</title><link href="/angr-tips-and-tricks.html" rel="alternate"></link><published>2020-03-09T00:00:00+01:00</published><updated>2020-03-09T00:00:00+01:00</updated><author><name>plowsec</name></author><id>tag:None,2020-03-09:/angr-tips-and-tricks.html</id><summary type="html">&lt;p&gt;This post aims to be the first in a series where I document my journey in learning &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve real-world&amp;nbsp;problems.&lt;/p&gt;</summary><content type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#introduction"&gt;Introduction&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#about-this-posts-content"&gt;About this post&amp;#8217;s&amp;nbsp;content&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#test-binary"&gt;Test&amp;nbsp;binary&lt;/a&gt;&lt;/li&gt;
