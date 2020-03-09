@@ -1,8 +1,499 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>plowsec's blog</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2020-05-03T00:00:00+02:00</updated><entry><title>First Post on My Sweet New Blog</title><link href="/first-post-on-my-sweet-new-blog.html" rel="alternate"></link><published>2020-05-03T00:00:00+02:00</published><updated>2020-05-03T00:00:00+02:00</updated><author><name>Your Name Here</name></author><id>tag:None,2020-05-03:/first-post-on-my-sweet-new-blog.html</id><content type="html">&lt;h1&gt;I am On My Way To Internet Fame and Fortune!&lt;/h1&gt;
-&lt;p&gt;This is my first post on my new blog. While not super informative it
-should convey my sense of excitement and eagerness to engage with you,
-the reader!&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>Second post on My Sweet New Blog</title><link href="/second-post-on-my-sweet-new-blog.html" rel="alternate"></link><published>2020-05-03T00:00:00+02:00</published><updated>2020-05-03T00:00:00+02:00</updated><author><name>Your Name Here</name></author><id>tag:None,2020-05-03:/second-post-on-my-sweet-new-blog.html</id><content type="html">&lt;h1&gt;This is my second post&lt;/h1&gt;
-&lt;p&gt;This is my first post on my new blog. While not super informative it
-should convey my sense of excitement and eagerness to engage with you,
-the reader!&lt;/p&gt;</content><category term="misc"></category></entry></feed>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>plowsec</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2020-03-09T00:00:00+01:00</updated><entry><title>Getting acquainted with angr</title><link href="/angr-tips-and-tricks.html" rel="alternate"></link><published>2020-03-09T00:00:00+01:00</published><updated>2020-03-09T00:00:00+01:00</updated><author><name>plowsec</name></author><id>tag:None,2020-03-09:/angr-tips-and-tricks.html</id><summary type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#introduction"&gt;Introduction&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#about-this-posts-content"&gt;About this post&amp;#8217;s&amp;nbsp;content&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#test-binary"&gt;Test&amp;nbsp;binary&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#reverse-engineering"&gt;Reverse-engineering&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#angr-101"&gt;angr&amp;nbsp;101&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#when-angr-is-taking-forever"&gt;When angr is taking&amp;nbsp;forever&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#optimizing"&gt;Optimizing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#final-solution"&gt;Final&amp;nbsp;solution&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#conclusion"&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;This post aimes to be the first in a series where I document my journey in learning &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve real-world problems. At first, &lt;span class="caps"&gt;CTF&lt;/span&gt; challenges …&lt;/p&gt;</summary><content type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#introduction"&gt;Introduction&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#about-this-posts-content"&gt;About this post&amp;#8217;s&amp;nbsp;content&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#test-binary"&gt;Test&amp;nbsp;binary&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#reverse-engineering"&gt;Reverse-engineering&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#angr-101"&gt;angr&amp;nbsp;101&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#when-angr-is-taking-forever"&gt;When angr is taking&amp;nbsp;forever&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#optimizing"&gt;Optimizing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#final-solution"&gt;Final&amp;nbsp;solution&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#conclusion"&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;This post aimes to be the first in a series where I document my journey in learning &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve real-world problems. At first, &lt;span class="caps"&gt;CTF&lt;/span&gt; challenges will be used as examples, the goal being to learn to handle more and more corner cases as I am making&amp;nbsp;progress.&lt;/p&gt;
+&lt;p&gt;Learning to use &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; effectively was a personal objective I had in mind for the past year. Unfortunately, the examples I found online were either too old, too simple or too complicated. In view of that, an emphasis will be put on explaining solutions to every problem encountered or potential&amp;nbsp;gotchas.&lt;/p&gt;
+&lt;p&gt;Here are the things I would like to eventually be able to do with &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Assist me in my day-to-day reverse-engineering&amp;nbsp;tasks.&lt;/li&gt;
+&lt;li&gt;Binary&amp;nbsp;deobfuscation.&lt;/li&gt;
+&lt;li&gt;Automate most of the job when a binary embbeds a Virtual Machine to protect some&amp;nbsp;algorithm.&lt;/li&gt;
+&lt;li&gt;Solve hard &lt;span class="caps"&gt;CTF&lt;/span&gt; tasks where the 10 line &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; template does not suffice&amp;nbsp;;-)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So, by the end of it, expect to dig very deep in &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;&amp;#8216;s internals, so that it stops being a black-box that either solves a challenge or gets stuck who knows&amp;nbsp;where.&lt;/p&gt;
+&lt;h2 id="about-this-posts-content"&gt;About this post&amp;#8217;s&amp;nbsp;content&lt;/h2&gt;
+&lt;p&gt;The takeaways for this post are the&amp;nbsp;following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A good and simple &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; template to solve a basic challenge, with debug tricks to understand what &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; is&amp;nbsp;doing.&lt;/li&gt;
+&lt;li&gt;Helping &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to go&amp;nbsp;faster.&lt;/li&gt;
+&lt;li&gt;Interfacing with memory to put constraints on specific variables within a&amp;nbsp;binary.&lt;/li&gt;
+&lt;li&gt;Hook functions to summarize their behaviour. Reverse-engineering will never be fully automated, instead it is better to focus on a trade-off where we manually perform some easy tasks and let &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; do the thinking stuff&amp;nbsp;:-)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="test-binary"&gt;Test&amp;nbsp;binary&lt;/h2&gt;
+&lt;p&gt;To practice with &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;, the following simple C program will be&amp;nbsp;used:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;string.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+
+&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;display_error&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;char&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;param_1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;param_2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;pcVar1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;param_2&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;pcVar1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;strerror&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;param_2&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;fprintf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stderr&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%s : &lt;/span&gt;&lt;span class="se"&gt;\&amp;quot;&lt;/span&gt;&lt;span class="s"&gt;%s&lt;/span&gt;&lt;span class="se"&gt;\&amp;quot;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;param_1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;pcVar1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="nf"&gt;get_user_input&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;param_1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;piVar1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kt"&gt;size_t&lt;/span&gt; &lt;span class="n"&gt;input_size&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;iVar2&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kt"&gt;char&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;user_input&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;param_1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;user_input&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;char&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;malloc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;param_1&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mh"&gt;0x0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;display_error&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Allocating memory&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;   &lt;span class="p"&gt;{&lt;/span&gt;
+
+        &lt;span class="n"&gt;iVar2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getchar&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;user_input&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;char&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;iVar2&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;user_input&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;\n&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+        &lt;span class="n"&gt;input_size&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;index&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;index&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;user_input&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;realloc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;user_input&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;input_size&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;user_input&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mh"&gt;0x0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;display_error&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Reallocating memory&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="n"&gt;user_input&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;user_input&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;argc&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;iVar1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;input_address&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Enter secret password: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;input_address&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;get_user_input&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;input_address&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;strcmp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;input_address&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;123456789&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;    &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Good, the password was : %s!&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;input_address&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;   &lt;span class="k"&gt;else&lt;/span&gt;    &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;puts&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Try harder.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;It is actually taken from a &lt;span class="caps"&gt;CTF&lt;/span&gt; task whose name I cannot cite, since it is still running. In any case, it will do for this post&amp;#8217;s purpose. In short, this program asks the user to input a secret password, compares it with &amp;#8220;123456789&amp;#8221; and outputs a message accordingly (&amp;#8220;Good&amp;#8221; or &amp;#8220;Try&amp;nbsp;harder&amp;#8221;).&lt;/p&gt;
+&lt;p&gt;In addition, the logic to fetch user input is intentionaly over-complicated to show a situation where &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; will get stuck analyzing something&amp;nbsp;useless.&lt;/p&gt;
+&lt;p&gt;Let&amp;#8217;s punch that code into a &amp;#8220;test.c&amp;#8221; file and then build&amp;nbsp;it:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;gcc test.c -o test.bin -m32 -no-pie
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;-m32: compile for Intel 32-bit&amp;#8217;s architecture, so as to simplify the&amp;nbsp;task.&lt;/li&gt;
+&lt;li&gt;-no-pie: do not produce a Position Independant Executable, since it would add complexity to locate the addresses of the good/bad basic&amp;nbsp;blocks.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Test the&amp;nbsp;program:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;$ ./test.bin
+Enter secret password: &lt;span class="m"&gt;1234&lt;/span&gt;
+Try harder.
+$ ./test.bin
+Enter secret password: &lt;span class="m"&gt;123456789&lt;/span&gt;
+Good, the password was : &lt;span class="m"&gt;123456789&lt;/span&gt;!
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="reverse-engineering"&gt;Reverse-engineering&lt;/h2&gt;
+&lt;p&gt;Let&amp;#8217;s open the binary in your favorite disassembler (here, Binary Ninja is used but any other will do just as fine). The goal is retrieve the addresses of the following basic&amp;nbsp;blocks:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The basic block we would like to reach&amp;nbsp;(0x8049353).&lt;/li&gt;
+&lt;li&gt;The basic block we need to avoid&amp;nbsp;(0x8049371).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a class="mybox" href="/images/angr_01_addresses.png" title="Retrieve some useful addresses in Binary Ninja"&gt;&lt;img alt="Retrieve some useful addresses in Binary Ninja" src="/images/angr_01_addresses.png" width="300px"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;In addition, I find it is more comfortable to choose an address in the &amp;#8220;Good&amp;#8221; basic block that is located after the &lt;code&gt;printf&lt;/code&gt; instruction. Indeed, doing so allows to read &lt;code&gt;stdout&lt;/code&gt; and check that the message &amp;#8220;Good, the password was&amp;#8230;&amp;#8221; is indeed&amp;nbsp;present.&lt;/p&gt;
+&lt;p&gt;Here is the disassembly for that basic&amp;nbsp;block:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;08049350&lt;/span&gt;  &lt;span class="err"&gt;83&lt;/span&gt;&lt;span class="nf"&gt;ec08&lt;/span&gt;             &lt;span class="no"&gt;sub&lt;/span&gt;     &lt;span class="no"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0x8&lt;/span&gt;
+&lt;span class="err"&gt;08049353&lt;/span&gt;  &lt;span class="nf"&gt;ff75f0&lt;/span&gt;             &lt;span class="no"&gt;push&lt;/span&gt;    &lt;span class="no"&gt;dword&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="no"&gt;ebp-0x10&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;&lt;span class="no"&gt;var_18_1&lt;/span&gt;&lt;span class="err"&gt;}&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;&lt;span class="no"&gt;var_2c_1&lt;/span&gt;&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;span class="err"&gt;08049356&lt;/span&gt;  &lt;span class="err"&gt;8&lt;/span&gt;&lt;span class="nf"&gt;d835be0ffff&lt;/span&gt;       &lt;span class="no"&gt;lea&lt;/span&gt;     &lt;span class="no"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="no"&gt;ebx-0x1fa5&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;  &lt;span class="err"&gt;{&lt;/span&gt;&lt;span class="no"&gt;data_804a05b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="no"&gt;Good&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="no"&gt;the&lt;/span&gt; &lt;span class="no"&gt;password&lt;/span&gt; &lt;span class="no"&gt;was&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nv"&gt;%s&lt;/span&gt;&lt;span class="p"&gt;!&lt;/span&gt;&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="no"&gt;n&lt;/span&gt;&lt;span class="err"&gt;&amp;quot;}&lt;/span&gt;
+&lt;span class="err"&gt;0804935&lt;/span&gt;&lt;span class="nf"&gt;c&lt;/span&gt;  &lt;span class="mi"&gt;50&lt;/span&gt;                 &lt;span class="no"&gt;push&lt;/span&gt;    &lt;span class="no"&gt;eax&lt;/span&gt;  &lt;span class="err"&gt;{&lt;/span&gt;&lt;span class="no"&gt;data_804a05b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="no"&gt;Good&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="no"&gt;the&lt;/span&gt; &lt;span class="no"&gt;password&lt;/span&gt; &lt;span class="no"&gt;was&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nv"&gt;%s&lt;/span&gt;&lt;span class="p"&gt;!&lt;/span&gt;&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="no"&gt;n&lt;/span&gt;&lt;span class="err"&gt;&amp;quot;}&lt;/span&gt;
+&lt;span class="err"&gt;0804935&lt;/span&gt;&lt;span class="nf"&gt;d&lt;/span&gt;  &lt;span class="no"&gt;e8eefcffff&lt;/span&gt;         &lt;span class="no"&gt;call&lt;/span&gt;    &lt;span class="no"&gt;printf&lt;/span&gt;
+&lt;span class="err"&gt;08049362&lt;/span&gt;  &lt;span class="err"&gt;83&lt;/span&gt;&lt;span class="nf"&gt;c410&lt;/span&gt;             &lt;span class="no"&gt;add&lt;/span&gt;     &lt;span class="no"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0x10&lt;/span&gt;
+&lt;span class="err"&gt;08049365&lt;/span&gt;  &lt;span class="nf"&gt;eb12&lt;/span&gt;               &lt;span class="no"&gt;jmp&lt;/span&gt;     &lt;span class="mi"&gt;0x8049379&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We will use the address &lt;code&gt;0x8049362&lt;/code&gt; as the &lt;code&gt;find&lt;/code&gt; target.&lt;/p&gt;
+&lt;h2 id="angr-101"&gt;&lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;&amp;nbsp;101&lt;/h2&gt;
+&lt;p&gt;Since the binary is very simple, we could solve the challenge with the most basic &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; template that is often displayed as example when introducing the&amp;nbsp;framework:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;angr&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;sys&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;claripy&lt;/span&gt;
+
+&lt;span class="n"&gt;simgr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;
+&lt;span class="n"&gt;proj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;
+&lt;span class="n"&gt;state&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;
+
+&lt;span class="n"&gt;ADDRESS_TO_REACH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mh"&gt;0x8049362&lt;/span&gt;
+&lt;span class="n"&gt;ADDRESS_TO_AVOID&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mh"&gt;0x8049371&lt;/span&gt;
+&lt;span class="n"&gt;FLAG_SIZE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;simgr&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;state&lt;/span&gt;
+
+    &lt;span class="n"&gt;proj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;angr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Project&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;test.bin&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;load_options&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;auto_load_libs&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;False&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+    &lt;span class="n"&gt;flag&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;claripy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BVS&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;flag&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;FLAG_SIZE&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;state&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;factory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;blank_state&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stdin&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;flag&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;simgr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;factory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;simulation_manager&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;explore&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ADDRESS_TO_REACH&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;avoid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ADDRESS_TO_AVOID&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;num_find&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+
+        &lt;span class="n"&gt;found&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="n"&gt;output&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dumps&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;stdout&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fileno&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="sa"&gt;b&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Good&amp;quot;&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;WIN:&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt;  &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;errors&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ignore&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="n"&gt;input_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;stdin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;stdin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sa"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;The flag is: &lt;/span&gt;&lt;span class="se"&gt;\&amp;quot;&lt;/span&gt;&lt;span class="s2"&gt;{state.solver.eval(input_data, cast_to=bytes)}&lt;/span&gt;&lt;span class="se"&gt;\&amp;quot;&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Wut&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Done&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;That small snippet of code is adapted from the &lt;a href="https://docs.angr.io/core-concepts/pathgroups"&gt;official documentation&lt;/a&gt;. Maybe worth noting is the way user input is retrieved once a path was found to the specified basic&amp;nbsp;block:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;input_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;stdin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;stdin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sa"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;The flag is: &lt;/span&gt;&lt;span class="se"&gt;\&amp;quot;&lt;/span&gt;&lt;span class="s2"&gt;{state.solver.eval(input_data, cast_to=bytes)}&lt;/span&gt;&lt;span class="se"&gt;\&amp;quot;&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To read stdin, and thus recover the input found by &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;, we must ask the solver to concretize stdin, which is accomplished with the function &lt;code&gt;eval&lt;/code&gt; of the &lt;code&gt;solver&lt;/code&gt; instance stored in the &lt;code&gt;found&lt;/code&gt; state.&lt;/p&gt;
+&lt;p&gt;To access the other standard file descriptors, &lt;code&gt;dumps&lt;/code&gt; can be&amp;nbsp;useful:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dumps&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fileno&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This allows to read contents from stdin, stdout or stderr, but the file descriptor must be specified as a parameter (for instance &lt;code&gt;sys.stdout.fileno()&lt;/code&gt;)&lt;/p&gt;
+&lt;h2 id="when-angr-is-taking-forever"&gt;When &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; is taking&amp;nbsp;forever&lt;/h2&gt;
+&lt;p&gt;Running the aforementionned script does not produce any result and &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; seems to be stuck somewhere. To figure out the issue, it can be useful to enrich our template a bit. The goal is to be able to interrupt the script, drop into a Python interpreter and get some contextual info. To do that, let&amp;#8217;s add some code at the top of the&amp;nbsp;script:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;logging&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;os&lt;/span&gt;
+
+&lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getLogger&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;angr.manager&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setLevel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DEBUG&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;signal&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;killmyself&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;system&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;kill &lt;/span&gt;&lt;span class="si"&gt;%d&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getpid&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigint_handler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;signum&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;frame&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Stopping Execution for Debug. If you want to kill the programm issue: killmyself()&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;cs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;active&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;callstack&lt;/span&gt;
+    &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;cs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;cfg&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;analyses&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CFGFast&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sa"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Currently exploring function @ {hex(cs.current_function_address)}&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;get_fn_by_addr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;cs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_function_address&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;block&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;factory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;block&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;cs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;call_site_addr&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;block&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;capstone&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pp&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;IPython&amp;quot;&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;modules&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;IPython&lt;/span&gt;
+        &lt;span class="n"&gt;IPython&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;embed&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="n"&gt;signal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;signal&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;signal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SIGINT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sigint_handler&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_fn_by_addr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;addr&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;fns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;kb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;functions&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;fn&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;fns&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;addr&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;fn&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="c1"&gt;# fn is a tuple(addr, Function object)&lt;/span&gt;
+            &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fn&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;break&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Re-run the script and issue &lt;span class="caps"&gt;CTRL&lt;/span&gt;+C after a few seconds. You should get the following&amp;nbsp;output:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;14&lt;/span&gt;:15:21,093 &lt;span class="p"&gt;|&lt;/span&gt; angr.state_plugins.symbolic_memory &lt;span class="p"&gt;|&lt;/span&gt; Filling memory at 0xc0002a7e with &lt;span class="m"&gt;1&lt;/span&gt; unconstrained bytes referenced from 0x90000a4 &lt;span class="o"&gt;(&lt;/span&gt;realloc+0x0 in extern-address space &lt;span class="o"&gt;(&lt;/span&gt;0xa4&lt;span class="o"&gt;))&lt;/span&gt;
+^CStopping Execution &lt;span class="k"&gt;for&lt;/span&gt; Debug. If you want to &lt;span class="nb"&gt;kill&lt;/span&gt; the programm issue: killmyself&lt;span class="o"&gt;()&lt;/span&gt;
+Backtrace:
+Frame &lt;span class="m"&gt;0&lt;/span&gt;: &lt;span class="nv"&gt;0x804931e&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;&amp;gt; 0x8049234, &lt;span class="nv"&gt;sp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; 0x7ffeff8c
+Frame &lt;span class="m"&gt;1&lt;/span&gt;: &lt;span class="nv"&gt;0x9000104&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;&amp;gt; 0x80492f2, &lt;span class="nv"&gt;sp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; 0x7ffeffcc
+Frame &lt;span class="m"&gt;2&lt;/span&gt;: &lt;span class="nv"&gt;0x80490e4&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;&amp;gt; 0x80490b0, &lt;span class="nv"&gt;sp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; 0x7ffeffdc
+Frame &lt;span class="m"&gt;3&lt;/span&gt;: &lt;span class="nv"&gt;0x0&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;&amp;gt; 0x0, &lt;span class="nv"&gt;sp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; 0xffffffff
+Currently exploring &lt;span class="k"&gt;function&lt;/span&gt; @ 0x8049234
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;134517300&lt;/span&gt;, &amp;lt;Function get_user_input &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;134517300&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&amp;gt;&lt;span class="o"&gt;)&lt;/span&gt;
+0x804931e:  add esp, 0x10
+0x8049321:  sub esp, 0xc
+0x8049324:  push    dword ptr &lt;span class="o"&gt;[&lt;/span&gt;ebp - 0x10&lt;span class="o"&gt;]&lt;/span&gt;
+0x8049327:  call    0x8049234
+Python &lt;span class="m"&gt;3&lt;/span&gt;.7.6 &lt;span class="o"&gt;(&lt;/span&gt;default, Dec &lt;span class="m"&gt;30&lt;/span&gt; &lt;span class="m"&gt;2019&lt;/span&gt;, &lt;span class="m"&gt;19&lt;/span&gt;:38:26&lt;span class="o"&gt;)&lt;/span&gt;
+Type &lt;span class="s1"&gt;&amp;#39;copyright&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;credits&amp;#39;&lt;/span&gt; or &lt;span class="s1"&gt;&amp;#39;license&amp;#39;&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; more information
+IPython &lt;span class="m"&gt;7&lt;/span&gt;.13.0 -- An enhanced Interactive Python. Type &lt;span class="s1"&gt;&amp;#39;?&amp;#39;&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; help.
+
+In &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;:
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;As shown above, we now know that &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; was exploring the function &lt;code&gt;get_user_input&lt;/code&gt;. To get to that result, we had&amp;nbsp;to:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Install an interrupt handler to catch &lt;span class="caps"&gt;CTRL&lt;/span&gt;+C.&lt;/li&gt;
+&lt;li&gt;Print the callstack using &lt;code&gt;simgr.active[0].callstack&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Run &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;&amp;#8216;s Control Flow Graph analysis to populate the &lt;code&gt;functions&lt;/code&gt; in &lt;code&gt;kb&lt;/code&gt; with &lt;code&gt;proj.analyses.CFGFast()&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Correlate function addresses to symbols in the&amp;nbsp;binary.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;For that last step, this is done as&amp;nbsp;follows:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_fn_by_addr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;addr&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;fns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;kb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;functions&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;fn&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;fns&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;addr&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;fn&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="c1"&gt;# fn is a tuple(addr, Function object)&lt;/span&gt;
+            &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fn&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;break&lt;/span&gt;
+
+&lt;span class="n"&gt;get_fn_by_addr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;cs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_function_address&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="optimizing"&gt;Optimizing&lt;/h2&gt;
+&lt;p&gt;I have yet to find a way to get an estimate of the time &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; will take in a given function. However, it is not interesting to let &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; analyze the function &lt;code&gt;get_user_input&lt;/code&gt;, since basically it just gets some data from stdin, allocates memory to store it and returns the address of the buffer containing the user&amp;nbsp;input.&lt;/p&gt;
+&lt;p&gt;In fact, we could abstract it all away and let &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; reason about the real interesting things, which is finding the path to the &amp;#8220;Good&amp;#8221; basic&amp;nbsp;block.&lt;/p&gt;
+&lt;p&gt;To do that, it is possible to setup a hook for a given address and&amp;nbsp;symbol:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hook_symbol&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;get_user_input&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;GetString&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then, the hook&amp;#8217;s handler is defined as&amp;nbsp;follows:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="n"&gt;GetString&lt;/span&gt;(&lt;span class="n"&gt;angr&lt;/span&gt;.&lt;span class="n"&gt;SimProcedure&lt;/span&gt;):
+
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="nb"&gt;run&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;, &lt;span class="n"&gt;argv&lt;/span&gt;):
+        &lt;span class="nb"&gt;print&lt;/span&gt;(&lt;span class="n"&gt;f&amp;#39;Called&lt;/span&gt; &lt;span class="n"&gt;get_user_input&lt;/span&gt; &lt;span class="n"&gt;with&lt;/span&gt; &lt;span class="n"&gt;param&lt;/span&gt; {&lt;span class="n"&gt;argv&lt;/span&gt;}&amp;#39;)
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;RANDOM_MEMORY_ADDRESS&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;What this hook does is fixing the return value of &lt;code&gt;get_user_input&lt;/code&gt; to &lt;code&gt;RANDOM_MEMORY_ADDRESS&lt;/code&gt;, which can be any free address&amp;nbsp;really.&lt;/p&gt;
+&lt;p&gt;Then, it is important to tell &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; that this address is an array with constrained, symbolic&amp;nbsp;values:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;my_buf&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;RANDOM_MEMORY_ADDRESS&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;flag&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;chop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+    &lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;solver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;char&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;memory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;store&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;addr&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;my_buf&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Afterwards, it is also necessary to adapt the way the solution is&amp;nbsp;retrieved:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;input_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;found&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="k"&gt;stdin&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="k"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;found&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="k"&gt;stdin&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="k"&gt;size&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="ss"&gt;&amp;quot;The flag is: \&amp;quot;&lt;/span&gt;&lt;span class="err"&gt;{&lt;/span&gt;&lt;span class="k"&gt;found&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;solver&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;eval&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;input_data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;cast_to&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;bytes&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="err"&gt;}\&lt;/span&gt;&lt;span class="ss"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;solution&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;found&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;solver&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;eval&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;found&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;memory&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="k"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;RANDOM_MEMORY_ADDRESS&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;FLAG_SIZE&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;cast_to&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;bytes&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="n"&gt;rstrip&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;\0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ascii&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;errors&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ignore&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="ss"&gt;&amp;quot;The flag is: \&amp;quot;&lt;/span&gt;&lt;span class="err"&gt;{&lt;/span&gt;&lt;span class="n"&gt;solution&lt;/span&gt;&lt;span class="err"&gt;}\&lt;/span&gt;&lt;span class="ss"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Also, we no longer instantiate a state with a symbolic&amp;nbsp;stdin:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;-state = proj.factory.blank_state(stdin=flag)&lt;/span&gt;
+&lt;span class="err"&gt;+state = proj.factory.blank_state()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="final-solution"&gt;Final&amp;nbsp;solution&lt;/h2&gt;
+&lt;p&gt;Here is the final&amp;nbsp;script:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;angr&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;sys&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;logging&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;os&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;struct&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;claripy&lt;/span&gt;
+
+&lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getLogger&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;angr.manager&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setLevel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DEBUG&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;signal&lt;/span&gt;
+
+&lt;span class="n"&gt;simgr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+&lt;span class="n"&gt;proj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+&lt;span class="n"&gt;state&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+
+&lt;span class="n"&gt;RANDOM_MEMORY_ADDRESS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mh"&gt;0x99000000&lt;/span&gt; &lt;span class="c1"&gt;# address chosen at random to store things in memory.&lt;/span&gt;
+&lt;span class="n"&gt;FLAG_SIZE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;
+&lt;span class="n"&gt;ADDRESS_TO_REACH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mh"&gt;0x8049362&lt;/span&gt;
+&lt;span class="n"&gt;ADDRESS_TO_AVOID&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mh"&gt;0x8049371&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;killmyself&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;system&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;kill &lt;/span&gt;&lt;span class="si"&gt;%d&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getpid&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;sigint_handler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;signum&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;frame&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Stopping Execution for Debug. If you want to kill the programm issue: killmyself()&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;cs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;active&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;callstack&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;cs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;cfg&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;analyses&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CFGFast&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Currently exploring function @ {hex(cs.current_function_address)}&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;get_fn_by_addr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;cs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;current_function_address&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;block&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;factory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;block&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;cs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;call_site_addr&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;block&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;capstone&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pp&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;IPython&amp;quot;&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;modules&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;IPython&lt;/span&gt;
+        &lt;span class="n"&gt;IPython&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;embed&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="n"&gt;signal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;signal&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;signal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SIGINT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sigint_handler&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_fn_by_addr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;addr&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;fns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;kb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;functions&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;fn&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;fns&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;addr&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;fn&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="c1"&gt;# fn is a tuple(addr, Function object)&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fn&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;break&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;char&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="c1"&gt;# only printable chars&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;solver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;And&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;~&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;GetString&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;angr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SimProcedure&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Called getString with param {argv}&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;RANDOM_MEMORY_ADDRESS&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;simgr&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;state&lt;/span&gt;
+
+    &lt;span class="n"&gt;proj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;angr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Project&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;test.bin&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;load_options&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;auto_load_libs&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+    &lt;span class="n"&gt;flag&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;claripy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BVS&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;flag&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;FLAG_SIZE&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;state&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;factory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;blank_state&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="n"&gt;my_buf&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;RANDOM_MEMORY_ADDRESS&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;flag&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;chop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+        &lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;solver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;char&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+        &lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;memory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;store&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;addr&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;my_buf&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hook_symbol&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;get_user_input&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;GetString&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+    &lt;span class="n"&gt;simgr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;proj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;factory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;simulation_manager&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;explore&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ADDRESS_TO_REACH&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;avoid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ADDRESS_TO_AVOID&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;num_find&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+
+        &lt;span class="n"&gt;found&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="n"&gt;output&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;posix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dumps&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;stdout&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fileno&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="sa"&gt;b&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Good&amp;quot;&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;WIN:&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt;  &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;errors&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ignore&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="n"&gt;solution&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;solver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;eval&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;found&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;memory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;RANDOM_MEMORY_ADDRESS&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;FLAG_SIZE&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;cast_to&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;bytes&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rstrip&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sa"&gt;b&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\0&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ascii&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;errors&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ignore&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;The flag is: &lt;/span&gt;&lt;span class="se"&gt;\&amp;quot;&lt;/span&gt;&lt;span class="s2"&gt;{solution}&lt;/span&gt;&lt;span class="se"&gt;\&amp;quot;&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Wut&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Done&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Running this script takes around 3 seconds and produces the following&amp;nbsp;output:&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;(&lt;/span&gt;angr&lt;span class="o"&gt;)&lt;/span&gt; ➜  angr &lt;span class="nb"&gt;time&lt;/span&gt; python3 test_solve.py
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,818 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,819 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,821 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,821 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,822 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,822 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,823 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,823 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,824 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,824 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,824 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,825 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,825 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,826 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,827 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,827 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,828 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:41,828 &lt;span class="p"&gt;|&lt;/span&gt; claripy.ast.bv &lt;span class="p"&gt;|&lt;/span&gt; BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:42,145 &lt;span class="p"&gt;|&lt;/span&gt; angr.state_plugins.symbolic_memory &lt;span class="p"&gt;|&lt;/span&gt; The program is accessing memory or registers with an unspecified value. This could indicate unwanted behavior.
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:42,145 &lt;span class="p"&gt;|&lt;/span&gt; angr.state_plugins.symbolic_memory &lt;span class="p"&gt;|&lt;/span&gt; angr will cope with this by generating an unconstrained symbolic variable and continuing. You can resolve this by:
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:42,145 &lt;span class="p"&gt;|&lt;/span&gt; angr.state_plugins.symbolic_memory &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; setting a value to the initial state
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:42,145 &lt;span class="p"&gt;|&lt;/span&gt; angr.state_plugins.symbolic_memory &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; adding the state option ZERO_FILL_UNCONSTRAINED_&lt;span class="o"&gt;{&lt;/span&gt;MEMORY,REGISTERS&lt;span class="o"&gt;}&lt;/span&gt;, to make unknown regions hold null
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:42,146 &lt;span class="p"&gt;|&lt;/span&gt; angr.state_plugins.symbolic_memory &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;3&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; adding the state option SYMBOL_FILL_UNCONSTRAINED_&lt;span class="o"&gt;{&lt;/span&gt;MEMORY_REGISTERS&lt;span class="o"&gt;}&lt;/span&gt;, to suppress these messages.
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:42,146 &lt;span class="p"&gt;|&lt;/span&gt; angr.state_plugins.symbolic_memory &lt;span class="p"&gt;|&lt;/span&gt; Filling register edi with &lt;span class="m"&gt;4&lt;/span&gt; unconstrained bytes referenced from 0x80493a0 &lt;span class="o"&gt;(&lt;/span&gt;__libc_csu_init+0x10 in test.bin &lt;span class="o"&gt;(&lt;/span&gt;0x80493a0&lt;span class="o"&gt;))&lt;/span&gt;
+Called getString with param &amp;lt;BV32 0x7ffeffb8&amp;gt;
+WARNING &lt;span class="p"&gt;|&lt;/span&gt; &lt;span class="m"&gt;2020&lt;/span&gt;-03-09 &lt;span class="m"&gt;15&lt;/span&gt;:26:42,296 &lt;span class="p"&gt;|&lt;/span&gt; angr.state_plugins.symbolic_memory &lt;span class="p"&gt;|&lt;/span&gt; Filling memory at 0x99000009 with &lt;span class="m"&gt;247&lt;/span&gt; unconstrained bytes referenced from 0x9000098 &lt;span class="o"&gt;(&lt;/span&gt;strcmp+0x0 in extern-address space &lt;span class="o"&gt;(&lt;/span&gt;0x98&lt;span class="o"&gt;))&lt;/span&gt;
+WIN:Enter secret password: Good, the password was : &lt;span class="m"&gt;12345678&lt;/span&gt;  @@   !
+
+The flag is: &lt;span class="s2"&gt;&amp;quot;123456789&amp;quot;&lt;/span&gt;
+Done
+python3 test_solve.py  &lt;span class="m"&gt;2&lt;/span&gt;.44s user &lt;span class="m"&gt;0&lt;/span&gt;.15s system &lt;span class="m"&gt;99&lt;/span&gt;% cpu &lt;span class="m"&gt;2&lt;/span&gt;.601 total
+&lt;span class="o"&gt;(&lt;/span&gt;angr&lt;span class="o"&gt;)&lt;/span&gt; ➜  angr
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="conclusion"&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Of course, solving that task by hand would have been way faster. The goal was to learn to use &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve a specific part in the challenge and enable the tool to take a shortcut by providing it with a hindsight we got through&amp;nbsp;reverse-engineering.&lt;/p&gt;
+&lt;p&gt;Interestingly, the test binary can be compiled for another architecture and the same &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; script can be used to solve it, which demonstrates the power of such mature&amp;nbsp;frameworks.&lt;/p&gt;
+&lt;p&gt;In the next posts, we will further explor &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;&amp;#8216; capabilities with another, harder &lt;span class="caps"&gt;CTF&lt;/span&gt;&amp;nbsp;challenge.&lt;/p&gt;</content><category term="misc"></category></entry></feed>

@@ -1,54 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>plowsec's blog</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/theme/styles.css">
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="/theme/slicknav.css">
-    <script src="/theme/jquery.slicknav.min.js"></script>
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-    <script type="text/javascript"
-	    src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-    </script>
-    <!--[if lt IE 9]>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.2/html5shiv.js"></script>
-    <![endif]-->
-<script>
-	$(function(){
-		$('#menu').slicknav({'label':''});
-	});
-</script>
-<link rel="icon" href="/theme/favicon.ico" sizes="16x16 32x32 48x48 64x64" type="image/vnd.microsoft.icon">
-<link rel="apple-touch-icon" sizes="114x114" href="/theme/apple-touch-icon-precomposed.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/theme/favicon152.png">
-<link rel="apple-touch-icon" sizes="196x196" href="/theme/favicon196.png">
-  </head>
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>plowsec - Categories</title>
+	<meta name="description" content="">
+	<meta name="author" content="plowsec">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <body>
-    <div id="wrapper">
+	<link href="/theme/css/colorbox.css" rel="stylesheet">
 
-      <header>
-	<nav class="byline"><ul id="menu">
-        </ul></nav><!-- /#menu -->
-        <div class="downloads">
-          <a href="#" class="fa fa-You can add links in your config file"></a>
-          <a href="#" class="fa fa-Another social link"></a>
-        </div>
-      </header>
-<section>
-    <h1>Categories in plowsec's blog</h1>
-<ul>        <li><a href="/category/misc.html">misc</a> (2)</li>
-</ul>
-</section>
-      <footer>
-	  <a href="/pages/about.html" >About</a>
-	  <div class="right-footer">
-	  <a href="/categories.html" >Categories</a>
-	  <a href="/tags.html" >Tags</a>
-	  </div>
-      </footer>
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css?f0d6ece5" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FF8000">
+
+	<meta name="msapplication-TileColor" content="#FF8000">
+	<meta name="msapplication-TileImage" content="/images/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/images/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/images/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/images/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/images/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/images/icons/avatar.png"></a>
+			<div id="name"><a href="/">plowsec</a></div>
+			<div id="bio">Security Engineer interested in Program Analysis, (de)obfuscation and antivirus engines. Stripped binaries || GTFO.</div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>
+			</div>
+
+			<div id="social">
+				<a href="mailto:united.marshmallow(at)gmail.com" title="Email (united.marshmallow(at)gmail.com)" class="icon fa fa-envelope"></a>
+				<a href="https://twitter.com/PlowSec" title="Twitter" class="icon fa fa-twitter"></a>
+				<a href="https://github.com/plowsec" title="GitHub" class="icon fa fa-github"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+    <h1>Categories on plowsec</h1>
+    <ul>
+        <li><a href="/category/misc.html">misc</a> (1)</li>
+    </ul>
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com">Pelican</a> (<a href="https://github.com/iKevinY/pneumatic">Pneumatic Theme</a>) and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<!-- Make sure jquery is loaded first, then load colorbox -->
+<script src="/theme/js/jquery.colorbox-min.js"></script>
+<script src="/theme/js/load-colorbox.js"></script>
 </body>
 </html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Getting acquainted with angr | plowsec</title>
+	<meta name="description" content="Table of contents: Introduction About this post’s content Test binary Reverse-engineering angr 101 When angr is taking forever Optimizing Final solution Conclusion Introduction This post aimes to be the first in a series where I document my journey in learning angr to solve real-world problems. At first, CTF challenges …">
+	<meta name="author" content="plowsec">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link href="/theme/css/colorbox.css" rel="stylesheet">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="@PlowSec">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="@PlowSec">
+	<meta property="og:title" content="Getting acquainted with angr">
+	<meta property="og:description" content="Table of contents: Introduction About this post’s content Test binary Reverse-engineering angr 101 When angr is taking forever Optimizing Final solution Conclusion Introduction This post aimes to be the first in a series where I document my journey in learning angr to solve real-world problems. At first, CTF challenges …">
+	<meta property="og:image" content="/images/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/angr-tips-and-tricks.html">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css?f0d6ece5" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FF8000">
+
+	<meta name="msapplication-TileColor" content="#FF8000">
+	<meta name="msapplication-TileImage" content="/images/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/images/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/images/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/images/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/images/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/images/icons/avatar.png"></a>
+			<div id="name"><a href="/">plowsec</a></div>
+			<div id="bio">Security Engineer interested in Program Analysis, (de)obfuscation and antivirus engines. Stripped binaries || GTFO.</div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>
+			</div>
+
+			<div id="social">
+				<a href="mailto:united.marshmallow(at)gmail.com" title="Email (united.marshmallow(at)gmail.com)" class="icon fa fa-envelope"></a>
+				<a href="https://twitter.com/PlowSec" title="Twitter" class="icon fa fa-twitter"></a>
+				<a href="https://github.com/plowsec" title="GitHub" class="icon fa fa-github"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/angr-tips-and-tricks.html" title="Permalink to Getting acquainted with angr">Getting acquainted with&nbsp;angr</a></h1>
+	<time class="date" datetime="2020-03-09 00:00:00+01:00">Mon 09 March 2020</time>
+	<div class="content">
+		<div class="toc"><span class="toctitle">Table of contents:</span><ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#about-this-posts-content">About this post&#8217;s&nbsp;content</a></li>
+<li><a href="#test-binary">Test&nbsp;binary</a></li>
+<li><a href="#reverse-engineering">Reverse-engineering</a></li>
+<li><a href="#angr-101">angr&nbsp;101</a></li>
+<li><a href="#when-angr-is-taking-forever">When angr is taking&nbsp;forever</a></li>
+<li><a href="#optimizing">Optimizing</a></li>
+<li><a href="#final-solution">Final&nbsp;solution</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</div>
+<h2 id="introduction">Introduction</h2>
+<p>This post aimes to be the first in a series where I document my journey in learning <a href="https://github.com/angr/angr">angr</a> to solve real-world problems. At first, <span class="caps">CTF</span> challenges will be used as examples, the goal being to learn to handle more and more corner cases as I am making&nbsp;progress.</p>
+<p>Learning to use <a href="https://github.com/angr/angr">angr</a> effectively was a personal objective I had in mind for the past year. Unfortunately, the examples I found online were either too old, too simple or too complicated. In view of that, an emphasis will be put on explaining solutions to every problem encountered or potential&nbsp;gotchas.</p>
+<p>Here are the things I would like to eventually be able to do with <a href="https://github.com/angr/angr">angr</a>:</p>
+<ul>
+<li>Assist me in my day-to-day reverse-engineering&nbsp;tasks.</li>
+<li>Binary&nbsp;deobfuscation.</li>
+<li>Automate most of the job when a binary embbeds a Virtual Machine to protect some&nbsp;algorithm.</li>
+<li>Solve hard <span class="caps">CTF</span> tasks where the 10 line <a href="https://github.com/angr/angr">angr</a> template does not suffice&nbsp;;-)</li>
+</ul>
+<p>So, by the end of it, expect to dig very deep in <a href="https://github.com/angr/angr">angr</a>&#8216;s internals, so that it stops being a black-box that either solves a challenge or gets stuck who knows&nbsp;where.</p>
+<h2 id="about-this-posts-content">About this post&#8217;s&nbsp;content</h2>
+<p>The takeaways for this post are the&nbsp;following:</p>
+<ul>
+<li>A good and simple <a href="https://github.com/angr/angr">angr</a> template to solve a basic challenge, with debug tricks to understand what <a href="https://github.com/angr/angr">angr</a> is&nbsp;doing.</li>
+<li>Helping <a href="https://github.com/angr/angr">angr</a> to go&nbsp;faster.</li>
+<li>Interfacing with memory to put constraints on specific variables within a&nbsp;binary.</li>
+<li>Hook functions to summarize their behaviour. Reverse-engineering will never be fully automated, instead it is better to focus on a trade-off where we manually perform some easy tasks and let <a href="https://github.com/angr/angr">angr</a> do the thinking stuff&nbsp;:-)</li>
+</ul>
+<h2 id="test-binary">Test&nbsp;binary</h2>
+<p>To practice with <a href="https://github.com/angr/angr">angr</a>, the following simple C program will be&nbsp;used:</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp"></span>
+
+<span class="kt">void</span> <span class="nf">display_error</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span> <span class="n">param_1</span><span class="p">,</span> <span class="kt">int</span> <span class="n">param_2</span><span class="p">)</span>
+
+<span class="p">{</span>
+  <span class="kt">char</span> <span class="o">*</span><span class="n">pcVar1</span><span class="p">;</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">param_2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pcVar1</span> <span class="o">=</span> <span class="n">strerror</span><span class="p">(</span><span class="n">param_2</span><span class="p">);</span>
+    <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s">&quot;%s : </span><span class="se">\&quot;</span><span class="s">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">param_1</span><span class="p">,</span><span class="n">pcVar1</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="o">*</span><span class="nf">get_user_input</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">param_1</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="o">*</span><span class="n">piVar1</span><span class="p">;</span>
+    <span class="kt">size_t</span> <span class="n">input_size</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">iVar2</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">char</span><span class="o">*</span> <span class="n">user_input</span> <span class="o">=</span> <span class="n">param_1</span><span class="p">;</span>
+    <span class="n">user_input</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">param_1</span> <span class="o">==</span> <span class="mh">0x0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">display_error</span><span class="p">(</span><span class="s">&quot;Allocating memory&quot;</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>   <span class="p">{</span>
+
+        <span class="n">iVar2</span> <span class="o">=</span> <span class="n">getchar</span><span class="p">();</span>
+        <span class="n">user_input</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="p">)</span><span class="n">iVar2</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">user_input</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="sc">&#39;\n&#39;</span><span class="p">)</span>  <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">input_size</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">user_input</span> <span class="o">=</span> <span class="n">realloc</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">input_size</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">user_input</span> <span class="o">==</span> <span class="mh">0x0</span><span class="p">)</span>  <span class="p">{</span>
+            <span class="n">display_error</span><span class="p">(</span><span class="s">&quot;Reallocating memory&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">user_input</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">user_input</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kt">int</span> <span class="n">iVar1</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">input_address</span><span class="p">;</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Enter secret password: &quot;</span><span class="p">);</span>
+    <span class="n">input_address</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span> <span class="n">get_user_input</span><span class="p">(</span><span class="n">input_address</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">strcmp</span><span class="p">(</span><span class="n">input_address</span><span class="p">,</span> <span class="s">&quot;123456789&quot;</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>    <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Good, the password was : %s!</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">input_address</span><span class="p">);</span>
+    <span class="p">}</span>   <span class="k">else</span>    <span class="p">{</span>
+        <span class="n">puts</span><span class="p">(</span><span class="s">&quot;Try harder.&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>It is actually taken from a <span class="caps">CTF</span> task whose name I cannot cite, since it is still running. In any case, it will do for this post&#8217;s purpose. In short, this program asks the user to input a secret password, compares it with &#8220;123456789&#8221; and outputs a message accordingly (&#8220;Good&#8221; or &#8220;Try&nbsp;harder&#8221;).</p>
+<p>In addition, the logic to fetch user input is intentionaly over-complicated to show a situation where <a href="https://github.com/angr/angr">angr</a> will get stuck analyzing something&nbsp;useless.</p>
+<p>Let&#8217;s punch that code into a &#8220;test.c&#8221; file and then build&nbsp;it:</p>
+<div class="codehilite"><pre><span></span><code>gcc test.c -o test.bin -m32 -no-pie
+</code></pre></div>
+
+
+<ul>
+<li>-m32: compile for Intel 32-bit&#8217;s architecture, so as to simplify the&nbsp;task.</li>
+<li>-no-pie: do not produce a Position Independant Executable, since it would add complexity to locate the addresses of the good/bad basic&nbsp;blocks.</li>
+</ul>
+<p>Test the&nbsp;program:</p>
+<div class="codehilite"><pre><span></span><code>$ ./test.bin
+Enter secret password: <span class="m">1234</span>
+Try harder.
+$ ./test.bin
+Enter secret password: <span class="m">123456789</span>
+Good, the password was : <span class="m">123456789</span>!
+</code></pre></div>
+
+
+<h2 id="reverse-engineering">Reverse-engineering</h2>
+<p>Let&#8217;s open the binary in your favorite disassembler (here, Binary Ninja is used but any other will do just as fine). The goal is retrieve the addresses of the following basic&nbsp;blocks:</p>
+<ul>
+<li>The basic block we would like to reach&nbsp;(0x8049353).</li>
+<li>The basic block we need to avoid&nbsp;(0x8049371).</li>
+</ul>
+<p><a class="mybox" href="/images/angr_01_addresses.png" title="Retrieve some useful addresses in Binary Ninja"><img alt="Retrieve some useful addresses in Binary Ninja" src="/images/angr_01_addresses.png" width="300px"></a></p>
+<p>In addition, I find it is more comfortable to choose an address in the &#8220;Good&#8221; basic block that is located after the <code>printf</code> instruction. Indeed, doing so allows to read <code>stdout</code> and check that the message &#8220;Good, the password was&#8230;&#8221; is indeed&nbsp;present.</p>
+<p>Here is the disassembly for that basic&nbsp;block:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">08049350</span>  <span class="err">83</span><span class="nf">ec08</span>             <span class="no">sub</span>     <span class="no">esp</span><span class="p">,</span> <span class="mi">0x8</span>
+<span class="err">08049353</span>  <span class="nf">ff75f0</span>             <span class="no">push</span>    <span class="no">dword</span> <span class="p">[</span><span class="no">ebp-0x10</span> <span class="err">{</span><span class="no">var_18_1</span><span class="err">}</span><span class="p">]</span> <span class="err">{</span><span class="no">var_2c_1</span><span class="err">}</span>
+<span class="err">08049356</span>  <span class="err">8</span><span class="nf">d835be0ffff</span>       <span class="no">lea</span>     <span class="no">eax</span><span class="p">,</span> <span class="p">[</span><span class="no">ebx-0x1fa5</span><span class="p">]</span>  <span class="err">{</span><span class="no">data_804a05b</span><span class="p">,</span> <span class="err">&quot;</span><span class="no">Good</span><span class="p">,</span> <span class="no">the</span> <span class="no">password</span> <span class="no">was</span> <span class="p">:</span> <span class="nv">%s</span><span class="p">!</span><span class="err">\</span><span class="no">n</span><span class="err">&quot;}</span>
+<span class="err">0804935</span><span class="nf">c</span>  <span class="mi">50</span>                 <span class="no">push</span>    <span class="no">eax</span>  <span class="err">{</span><span class="no">data_804a05b</span><span class="p">,</span> <span class="err">&quot;</span><span class="no">Good</span><span class="p">,</span> <span class="no">the</span> <span class="no">password</span> <span class="no">was</span> <span class="p">:</span> <span class="nv">%s</span><span class="p">!</span><span class="err">\</span><span class="no">n</span><span class="err">&quot;}</span>
+<span class="err">0804935</span><span class="nf">d</span>  <span class="no">e8eefcffff</span>         <span class="no">call</span>    <span class="no">printf</span>
+<span class="err">08049362</span>  <span class="err">83</span><span class="nf">c410</span>             <span class="no">add</span>     <span class="no">esp</span><span class="p">,</span> <span class="mi">0x10</span>
+<span class="err">08049365</span>  <span class="nf">eb12</span>               <span class="no">jmp</span>     <span class="mi">0x8049379</span>
+</code></pre></div>
+
+
+<p>We will use the address <code>0x8049362</code> as the <code>find</code> target.</p>
+<h2 id="angr-101"><a href="https://github.com/angr/angr">angr</a>&nbsp;101</h2>
+<p>Since the binary is very simple, we could solve the challenge with the most basic <a href="https://github.com/angr/angr">angr</a> template that is often displayed as example when introducing the&nbsp;framework:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">angr</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">claripy</span>
+
+<span class="n">simgr</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">proj</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">state</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">ADDRESS_TO_REACH</span> <span class="o">=</span> <span class="mh">0x8049362</span>
+<span class="n">ADDRESS_TO_AVOID</span> <span class="o">=</span> <span class="mh">0x8049371</span>
+<span class="n">FLAG_SIZE</span> <span class="o">=</span> <span class="mi">9</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">simgr</span>
+    <span class="k">global</span> <span class="n">proj</span>
+    <span class="k">global</span> <span class="n">state</span>
+
+    <span class="n">proj</span> <span class="o">=</span> <span class="n">angr</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="s2">&quot;test.bin&quot;</span><span class="p">,</span> <span class="n">load_options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;auto_load_libs&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+    <span class="n">flag</span> <span class="o">=</span> <span class="n">claripy</span><span class="o">.</span><span class="n">BVS</span><span class="p">(</span><span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="n">FLAG_SIZE</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">blank_state</span><span class="p">(</span><span class="n">stdin</span><span class="o">=</span><span class="n">flag</span><span class="p">)</span>
+    <span class="n">simgr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">simulation_manager</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="n">simgr</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span>
+        <span class="n">find</span><span class="o">=</span><span class="p">(</span><span class="n">ADDRESS_TO_REACH</span><span class="p">),</span>
+        <span class="n">avoid</span><span class="o">=</span><span class="p">(</span><span class="n">ADDRESS_TO_AVOID</span><span class="p">),</span>
+        <span class="n">num_find</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">simgr</span><span class="o">.</span><span class="n">found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+        <span class="n">found</span> <span class="o">=</span> <span class="n">simgr</span><span class="o">.</span><span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">found</span><span class="o">.</span><span class="n">posix</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="sa">b</span><span class="s2">&quot;Good&quot;</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WIN:&quot;</span> <span class="o">+</span>  <span class="n">output</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">))</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="n">found</span><span class="o">.</span><span class="n">posix</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">found</span><span class="o">.</span><span class="n">posix</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The flag is: </span><span class="se">\&quot;</span><span class="s2">{state.solver.eval(input_data, cast_to=bytes)}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Wut&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+
+
+<p>That small snippet of code is adapted from the <a href="https://docs.angr.io/core-concepts/pathgroups">official documentation</a>. Maybe worth noting is the way user input is retrieved once a path was found to the specified basic&nbsp;block:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">input_data</span> <span class="o">=</span> <span class="n">found</span><span class="o">.</span><span class="n">posix</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">found</span><span class="o">.</span><span class="n">posix</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The flag is: </span><span class="se">\&quot;</span><span class="s2">{state.solver.eval(input_data, cast_to=bytes)}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>To read stdin, and thus recover the input found by <a href="https://github.com/angr/angr">angr</a>, we must ask the solver to concretize stdin, which is accomplished with the function <code>eval</code> of the <code>solver</code> instance stored in the <code>found</code> state.</p>
+<p>To access the other standard file descriptors, <code>dumps</code> can be&nbsp;useful:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">found</span><span class="o">.</span><span class="n">posix</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">fileno</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>This allows to read contents from stdin, stdout or stderr, but the file descriptor must be specified as a parameter (for instance <code>sys.stdout.fileno()</code>)</p>
+<h2 id="when-angr-is-taking-forever">When <a href="https://github.com/angr/angr">angr</a> is taking&nbsp;forever</h2>
+<p>Running the aforementionned script does not produce any result and <a href="https://github.com/angr/angr">angr</a> seems to be stuck somewhere. To figure out the issue, it can be useful to enrich our template a bit. The goal is to be able to interrupt the script, drop into a Python interpreter and get some contextual info. To do that, let&#8217;s add some code at the top of the&nbsp;script:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;angr.manager&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="k">def</span> <span class="nf">killmyself</span><span class="p">():</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;kill </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">sigint_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Stopping Execution for Debug. If you want to kill the programm issue: killmyself()&#39;</span><span class="p">)</span>
+
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">callstack</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">analyses</span><span class="o">.</span><span class="n">CFGFast</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Currently exploring function @ {hex(cs.current_function_address)}&quot;</span><span class="p">)</span>
+    <span class="n">get_fn_by_addr</span><span class="p">(</span><span class="n">cs</span><span class="o">.</span><span class="n">current_function_address</span><span class="p">)</span>
+
+    <span class="n">block</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">cs</span><span class="o">.</span><span class="n">call_site_addr</span><span class="p">)</span>
+    <span class="n">block</span><span class="o">.</span><span class="n">capstone</span><span class="o">.</span><span class="n">pp</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;IPython&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">IPython</span>
+        <span class="n">IPython</span><span class="o">.</span><span class="n">embed</span><span class="p">()</span>
+
+<span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">sigint_handler</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_fn_by_addr</span><span class="p">(</span><span class="n">addr</span><span class="p">):</span>
+    <span class="n">fns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">kb</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fns</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">addr</span> <span class="o">==</span> <span class="n">fn</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="c1"># fn is a tuple(addr, Function object)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+            <span class="k">break</span>
+</code></pre></div>
+
+
+<p>Re-run the script and issue <span class="caps">CTRL</span>+C after a few seconds. You should get the following&nbsp;output:</p>
+<div class="codehilite"><pre><span></span><code>WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">14</span>:15:21,093 <span class="p">|</span> angr.state_plugins.symbolic_memory <span class="p">|</span> Filling memory at 0xc0002a7e with <span class="m">1</span> unconstrained bytes referenced from 0x90000a4 <span class="o">(</span>realloc+0x0 in extern-address space <span class="o">(</span>0xa4<span class="o">))</span>
+^CStopping Execution <span class="k">for</span> Debug. If you want to <span class="nb">kill</span> the programm issue: killmyself<span class="o">()</span>
+Backtrace:
+Frame <span class="m">0</span>: <span class="nv">0x804931e</span> <span class="o">=</span>&gt; 0x8049234, <span class="nv">sp</span> <span class="o">=</span> 0x7ffeff8c
+Frame <span class="m">1</span>: <span class="nv">0x9000104</span> <span class="o">=</span>&gt; 0x80492f2, <span class="nv">sp</span> <span class="o">=</span> 0x7ffeffcc
+Frame <span class="m">2</span>: <span class="nv">0x80490e4</span> <span class="o">=</span>&gt; 0x80490b0, <span class="nv">sp</span> <span class="o">=</span> 0x7ffeffdc
+Frame <span class="m">3</span>: <span class="nv">0x0</span> <span class="o">=</span>&gt; 0x0, <span class="nv">sp</span> <span class="o">=</span> 0xffffffff
+Currently exploring <span class="k">function</span> @ 0x8049234
+<span class="o">(</span><span class="m">134517300</span>, &lt;Function get_user_input <span class="o">(</span><span class="m">134517300</span><span class="o">)</span>&gt;<span class="o">)</span>
+0x804931e:  add esp, 0x10
+0x8049321:  sub esp, 0xc
+0x8049324:  push    dword ptr <span class="o">[</span>ebp - 0x10<span class="o">]</span>
+0x8049327:  call    0x8049234
+Python <span class="m">3</span>.7.6 <span class="o">(</span>default, Dec <span class="m">30</span> <span class="m">2019</span>, <span class="m">19</span>:38:26<span class="o">)</span>
+Type <span class="s1">&#39;copyright&#39;</span>, <span class="s1">&#39;credits&#39;</span> or <span class="s1">&#39;license&#39;</span> <span class="k">for</span> more information
+IPython <span class="m">7</span>.13.0 -- An enhanced Interactive Python. Type <span class="s1">&#39;?&#39;</span> <span class="k">for</span> help.
+
+In <span class="o">[</span><span class="m">1</span><span class="o">]</span>:
+</code></pre></div>
+
+
+<p>As shown above, we now know that <a href="https://github.com/angr/angr">angr</a> was exploring the function <code>get_user_input</code>. To get to that result, we had&nbsp;to:</p>
+<ol>
+<li>Install an interrupt handler to catch <span class="caps">CTRL</span>+C.</li>
+<li>Print the callstack using <code>simgr.active[0].callstack</code></li>
+<li>Run <a href="https://github.com/angr/angr">angr</a>&#8216;s Control Flow Graph analysis to populate the <code>functions</code> in <code>kb</code> with <code>proj.analyses.CFGFast()</code>.</li>
+<li>Correlate function addresses to symbols in the&nbsp;binary.</li>
+</ol>
+<p>For that last step, this is done as&nbsp;follows:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">get_fn_by_addr</span><span class="p">(</span><span class="n">addr</span><span class="p">):</span>
+    <span class="n">fns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">kb</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fns</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">addr</span> <span class="o">==</span> <span class="n">fn</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="c1"># fn is a tuple(addr, Function object)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+            <span class="k">break</span>
+
+<span class="n">get_fn_by_addr</span><span class="p">(</span><span class="n">cs</span><span class="o">.</span><span class="n">current_function_address</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h2 id="optimizing">Optimizing</h2>
+<p>I have yet to find a way to get an estimate of the time <a href="https://github.com/angr/angr">angr</a> will take in a given function. However, it is not interesting to let <a href="https://github.com/angr/angr">angr</a> analyze the function <code>get_user_input</code>, since basically it just gets some data from stdin, allocates memory to store it and returns the address of the buffer containing the user&nbsp;input.</p>
+<p>In fact, we could abstract it all away and let <a href="https://github.com/angr/angr">angr</a> reason about the real interesting things, which is finding the path to the &#8220;Good&#8221; basic&nbsp;block.</p>
+<p>To do that, it is possible to setup a hook for a given address and&nbsp;symbol:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">proj</span><span class="o">.</span><span class="n">hook_symbol</span><span class="p">(</span><span class="s1">&#39;get_user_input&#39;</span><span class="p">,</span> <span class="n">GetString</span><span class="p">())</span>
+</code></pre></div>
+
+
+<p>Then, the hook&#8217;s handler is defined as&nbsp;follows:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="n">GetString</span>(<span class="n">angr</span>.<span class="n">SimProcedure</span>):
+
+    <span class="n">def</span> <span class="nb">run</span>(<span class="k">self</span>, <span class="n">argv</span>):
+        <span class="nb">print</span>(<span class="n">f&#39;Called</span> <span class="n">get_user_input</span> <span class="n">with</span> <span class="n">param</span> {<span class="n">argv</span>}&#39;)
+        <span class="k">return</span> <span class="n">RANDOM_MEMORY_ADDRESS</span>
+</code></pre></div>
+
+
+<p>What this hook does is fixing the return value of <code>get_user_input</code> to <code>RANDOM_MEMORY_ADDRESS</code>, which can be any free address&nbsp;really.</p>
+<p>Then, it is important to tell <a href="https://github.com/angr/angr">angr</a> that this address is an array with constrained, symbolic&nbsp;values:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">my_buf</span> <span class="o">=</span> <span class="n">RANDOM_MEMORY_ADDRESS</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag</span><span class="o">.</span><span class="n">chop</span><span class="p">(</span><span class="mi">8</span><span class="p">)):</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">char</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">addr</span><span class="o">=</span><span class="n">my_buf</span><span class="o">+</span><span class="n">i</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>Afterwards, it is also necessary to adapt the way the solution is&nbsp;retrieved:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">-</span><span class="n">input_data</span> <span class="o">=</span> <span class="k">found</span><span class="p">.</span><span class="n">posix</span><span class="p">.</span><span class="k">stdin</span><span class="p">.</span><span class="k">load</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="k">found</span><span class="p">.</span><span class="n">posix</span><span class="p">.</span><span class="k">stdin</span><span class="p">.</span><span class="k">size</span><span class="p">)</span>
+<span class="o">-</span><span class="n">print</span><span class="p">(</span><span class="n">f</span><span class="ss">&quot;The flag is: \&quot;</span><span class="err">{</span><span class="k">found</span><span class="p">.</span><span class="n">solver</span><span class="p">.</span><span class="n">eval</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">cast_to</span><span class="o">=</span><span class="n">bytes</span><span class="p">)</span><span class="err">}\</span><span class="ss">&quot;&quot;</span><span class="p">)</span>
+
+<span class="o">+</span><span class="n">solution</span> <span class="o">=</span> <span class="k">found</span><span class="p">.</span><span class="n">solver</span><span class="p">.</span><span class="n">eval</span><span class="p">(</span><span class="k">found</span><span class="p">.</span><span class="n">memory</span><span class="p">.</span><span class="k">load</span><span class="p">(</span><span class="n">RANDOM_MEMORY_ADDRESS</span><span class="p">,</span> <span class="n">FLAG_SIZE</span><span class="p">),</span> <span class="n">cast_to</span><span class="o">=</span><span class="n">bytes</span><span class="p">).</span><span class="n">rstrip</span><span class="p">(</span><span class="n">b</span><span class="s1">&#39;\0&#39;</span><span class="p">).</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="o">+</span><span class="n">print</span><span class="p">(</span><span class="n">f</span><span class="ss">&quot;The flag is: \&quot;</span><span class="err">{</span><span class="n">solution</span><span class="err">}\</span><span class="ss">&quot;&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>Also, we no longer instantiate a state with a symbolic&nbsp;stdin:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">-state = proj.factory.blank_state(stdin=flag)</span>
+<span class="err">+state = proj.factory.blank_state()</span>
+</code></pre></div>
+
+
+<h2 id="final-solution">Final&nbsp;solution</h2>
+<p>Here is the final&nbsp;script:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">angr</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">claripy</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;angr.manager&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+
+<span class="n">simgr</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">proj</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">state</span> <span class="o">=</span> <span class="bp">None</span>
+
+<span class="n">RANDOM_MEMORY_ADDRESS</span> <span class="o">=</span> <span class="mh">0x99000000</span> <span class="c1"># address chosen at random to store things in memory.</span>
+<span class="n">FLAG_SIZE</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">ADDRESS_TO_REACH</span> <span class="o">=</span> <span class="mh">0x8049362</span>
+<span class="n">ADDRESS_TO_AVOID</span> <span class="o">=</span> <span class="mh">0x8049371</span>
+
+<span class="k">def</span> <span class="nf">killmyself</span><span class="p">():</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;kill </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">sigint_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Stopping Execution for Debug. If you want to kill the programm issue: killmyself()&#39;</span><span class="p">)</span>
+
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">callstack</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">analyses</span><span class="o">.</span><span class="n">CFGFast</span><span class="p">()</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Currently exploring function @ {hex(cs.current_function_address)}&quot;</span><span class="p">)</span>
+    <span class="n">get_fn_by_addr</span><span class="p">(</span><span class="n">cs</span><span class="o">.</span><span class="n">current_function_address</span><span class="p">)</span>
+
+    <span class="n">block</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">cs</span><span class="o">.</span><span class="n">call_site_addr</span><span class="p">)</span>
+    <span class="n">block</span><span class="o">.</span><span class="n">capstone</span><span class="o">.</span><span class="n">pp</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;IPython&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">IPython</span>
+        <span class="n">IPython</span><span class="o">.</span><span class="n">embed</span><span class="p">()</span>
+
+<span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">sigint_handler</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_fn_by_addr</span><span class="p">(</span><span class="n">addr</span><span class="p">):</span>
+    <span class="n">fns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">kb</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fns</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">addr</span> <span class="o">==</span> <span class="n">fn</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="c1"># fn is a tuple(addr, Function object)</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+            <span class="k">break</span>
+
+<span class="k">def</span> <span class="nf">char</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+    <span class="c1"># only printable chars</span>
+    <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">c</span> <span class="o">&lt;=</span> <span class="s1">&#39;~&#39;</span><span class="p">,</span> <span class="n">c</span> <span class="o">&gt;=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">GetString</span><span class="p">(</span><span class="n">angr</span><span class="o">.</span><span class="n">SimProcedure</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Called getString with param {argv}&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RANDOM_MEMORY_ADDRESS</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">simgr</span>
+    <span class="k">global</span> <span class="n">proj</span>
+    <span class="k">global</span> <span class="n">state</span>
+
+    <span class="n">proj</span> <span class="o">=</span> <span class="n">angr</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="s2">&quot;test.bin&quot;</span><span class="p">,</span> <span class="n">load_options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;auto_load_libs&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">})</span>
+    <span class="n">flag</span> <span class="o">=</span> <span class="n">claripy</span><span class="o">.</span><span class="n">BVS</span><span class="p">(</span><span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="n">FLAG_SIZE</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">blank_state</span><span class="p">()</span>
+
+    <span class="n">my_buf</span> <span class="o">=</span> <span class="n">RANDOM_MEMORY_ADDRESS</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag</span><span class="o">.</span><span class="n">chop</span><span class="p">(</span><span class="mi">8</span><span class="p">)):</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">char</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">addr</span><span class="o">=</span><span class="n">my_buf</span><span class="o">+</span><span class="n">i</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+
+    <span class="n">proj</span><span class="o">.</span><span class="n">hook_symbol</span><span class="p">(</span><span class="s1">&#39;get_user_input&#39;</span><span class="p">,</span> <span class="n">GetString</span><span class="p">())</span>
+
+    <span class="n">simgr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">simulation_manager</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="n">simgr</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span>
+        <span class="n">find</span><span class="o">=</span><span class="p">(</span><span class="n">ADDRESS_TO_REACH</span><span class="p">),</span>
+        <span class="n">avoid</span><span class="o">=</span><span class="p">(</span><span class="n">ADDRESS_TO_AVOID</span><span class="p">),</span>
+        <span class="n">num_find</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">simgr</span><span class="o">.</span><span class="n">found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+        <span class="n">found</span> <span class="o">=</span> <span class="n">simgr</span><span class="o">.</span><span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">found</span><span class="o">.</span><span class="n">posix</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="sa">b</span><span class="s2">&quot;Good&quot;</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;WIN:&quot;</span> <span class="o">+</span>  <span class="n">output</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">))</span>
+            <span class="n">solution</span> <span class="o">=</span> <span class="n">found</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">found</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">RANDOM_MEMORY_ADDRESS</span><span class="p">,</span> <span class="n">FLAG_SIZE</span><span class="p">),</span> <span class="n">cast_to</span><span class="o">=</span><span class="nb">bytes</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\0</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The flag is: </span><span class="se">\&quot;</span><span class="s2">{solution}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Wut&quot;</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Done&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+
+
+<p>Running this script takes around 3 seconds and produces the following&nbsp;output:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">(</span>angr<span class="o">)</span> ➜  angr <span class="nb">time</span> python3 test_solve.py
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,818 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,819 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,821 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,821 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,822 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,822 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,823 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,823 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,824 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,824 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,824 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,825 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,825 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,826 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,827 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,827 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,828 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:41,828 <span class="p">|</span> claripy.ast.bv <span class="p">|</span> BVV value is being coerced from a unicode string, encoding as utf-8
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:42,145 <span class="p">|</span> angr.state_plugins.symbolic_memory <span class="p">|</span> The program is accessing memory or registers with an unspecified value. This could indicate unwanted behavior.
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:42,145 <span class="p">|</span> angr.state_plugins.symbolic_memory <span class="p">|</span> angr will cope with this by generating an unconstrained symbolic variable and continuing. You can resolve this by:
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:42,145 <span class="p">|</span> angr.state_plugins.symbolic_memory <span class="p">|</span> <span class="m">1</span><span class="o">)</span> setting a value to the initial state
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:42,145 <span class="p">|</span> angr.state_plugins.symbolic_memory <span class="p">|</span> <span class="m">2</span><span class="o">)</span> adding the state option ZERO_FILL_UNCONSTRAINED_<span class="o">{</span>MEMORY,REGISTERS<span class="o">}</span>, to make unknown regions hold null
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:42,146 <span class="p">|</span> angr.state_plugins.symbolic_memory <span class="p">|</span> <span class="m">3</span><span class="o">)</span> adding the state option SYMBOL_FILL_UNCONSTRAINED_<span class="o">{</span>MEMORY_REGISTERS<span class="o">}</span>, to suppress these messages.
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:42,146 <span class="p">|</span> angr.state_plugins.symbolic_memory <span class="p">|</span> Filling register edi with <span class="m">4</span> unconstrained bytes referenced from 0x80493a0 <span class="o">(</span>__libc_csu_init+0x10 in test.bin <span class="o">(</span>0x80493a0<span class="o">))</span>
+Called getString with param &lt;BV32 0x7ffeffb8&gt;
+WARNING <span class="p">|</span> <span class="m">2020</span>-03-09 <span class="m">15</span>:26:42,296 <span class="p">|</span> angr.state_plugins.symbolic_memory <span class="p">|</span> Filling memory at 0x99000009 with <span class="m">247</span> unconstrained bytes referenced from 0x9000098 <span class="o">(</span>strcmp+0x0 in extern-address space <span class="o">(</span>0x98<span class="o">))</span>
+WIN:Enter secret password: Good, the password was : <span class="m">12345678</span>  @@   !
+
+The flag is: <span class="s2">&quot;123456789&quot;</span>
+Done
+python3 test_solve.py  <span class="m">2</span>.44s user <span class="m">0</span>.15s system <span class="m">99</span>% cpu <span class="m">2</span>.601 total
+<span class="o">(</span>angr<span class="o">)</span> ➜  angr
+</code></pre></div>
+
+
+<h2 id="conclusion">Conclusion</h2>
+<p>Of course, solving that task by hand would have been way faster. The goal was to learn to use <a href="https://github.com/angr/angr">angr</a> to solve a specific part in the challenge and enable the tool to take a shortcut by providing it with a hindsight we got through&nbsp;reverse-engineering.</p>
+<p>Interestingly, the test binary can be compiled for another architecture and the same <a href="https://github.com/angr/angr">angr</a> script can be used to solve it, which demonstrates the power of such mature&nbsp;frameworks.</p>
+<p>In the next posts, we will further explor <a href="https://github.com/angr/angr">angr</a>&#8216; capabilities with another, harder <span class="caps">CTF</span>&nbsp;challenge.</p>
+	</div>
+
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com">Pelican</a> (<a href="https://github.com/iKevinY/pneumatic">Pneumatic Theme</a>) and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<!-- Make sure jquery is loaded first, then load colorbox -->
+<script src="/theme/js/jquery.colorbox-min.js"></script>
+<script src="/theme/js/load-colorbox.js"></script>
+</body>
+</html>
