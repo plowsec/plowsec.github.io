@@ -127,7 +127,7 @@ Good, the password was : &lt;span class="m"&gt;123456789&lt;/span&gt;!
 
 
 &lt;h2 id="reverse-engineering"&gt;Reverse-engineering&lt;/h2&gt;
-&lt;p&gt;Let&amp;#8217;s open the binary in your favorite disassembler (here, Binary Ninja is used but any other will do just as fine). The goal is retrieve the addresses of the following basic&amp;nbsp;blocks:&lt;/p&gt;
+&lt;p&gt;Let&amp;#8217;s open the binary in your favorite disassembler (here, Binary Ninja is used but any other will do just as fine). The goal is to retrieve the addresses of the following basic&amp;nbsp;blocks:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;The basic block we would like to reach&amp;nbsp;(0x8049353).&lt;/li&gt;
 &lt;li&gt;The basic block we need to avoid&amp;nbsp;(0x8049371).&lt;/li&gt;
