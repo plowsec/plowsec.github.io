@@ -12,7 +12,7 @@
 &lt;/ul&gt;
 &lt;/div&gt;
 &lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
-&lt;p&gt;This post aimes to be the first in a series where I document my journey in learning &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve real-world problems. At first, &lt;span class="caps"&gt;CTF&lt;/span&gt; challenges …&lt;/p&gt;</summary><content type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
+&lt;p&gt;This post aims to be the first in a series where I document my journey in learning &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve real-world problems. At first, &lt;span class="caps"&gt;CTF&lt;/span&gt; challenges …&lt;/p&gt;</summary><content type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#introduction"&gt;Introduction&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#about-this-posts-content"&gt;About this post&amp;#8217;s&amp;nbsp;content&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#test-binary"&gt;Test&amp;nbsp;binary&lt;/a&gt;&lt;/li&gt;
@@ -25,7 +25,7 @@
 &lt;/ul&gt;
 &lt;/div&gt;
 &lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
-&lt;p&gt;This post aimes to be the first in a series where I document my journey in learning &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve real-world problems. At first, &lt;span class="caps"&gt;CTF&lt;/span&gt; challenges will be used as examples, the goal being to learn to handle more and more corner cases as I am making&amp;nbsp;progress.&lt;/p&gt;
+&lt;p&gt;This post aims to be the first in a series where I document my journey in learning &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve real-world problems. At first, &lt;span class="caps"&gt;CTF&lt;/span&gt; challenges will be used as examples, the goal being to learn to handle more and more corner cases as I am making&amp;nbsp;progress.&lt;/p&gt;
 &lt;p&gt;Learning to use &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; effectively was a personal objective I had in mind for the past year. Unfortunately, the examples I found online were either too old, too simple or too complicated. In view of that, an emphasis will be put on explaining solutions to every problem encountered or potential&amp;nbsp;gotchas.&lt;/p&gt;
 &lt;p&gt;Here are the things I would like to eventually be able to do with &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
@@ -496,4 +496,4 @@ python3 test_solve.py  &lt;span class="m"&gt;2&lt;/span&gt;.44s user &lt;span cl
 &lt;h2 id="conclusion"&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;Of course, solving that task by hand would have been way faster. The goal was to learn to use &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; to solve a specific part in the challenge and enable the tool to take a shortcut by providing it with a hindsight we got through&amp;nbsp;reverse-engineering.&lt;/p&gt;
 &lt;p&gt;Interestingly, the test binary can be compiled for another architecture and the same &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt; script can be used to solve it, which demonstrates the power of such mature&amp;nbsp;frameworks.&lt;/p&gt;
-&lt;p&gt;In the next posts, we will further explor &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;&amp;#8216; capabilities with another, harder &lt;span class="caps"&gt;CTF&lt;/span&gt;&amp;nbsp;challenge.&lt;/p&gt;</content><category term="misc"></category></entry></feed>
+&lt;p&gt;In the next posts, we will further explore &lt;a href="https://github.com/angr/angr"&gt;angr&lt;/a&gt;&amp;#8216;s capabilities with another, harder &lt;span class="caps"&gt;CTF&lt;/span&gt;&amp;nbsp;challenge.&lt;/p&gt;</content><category term="misc"></category></entry></feed>
