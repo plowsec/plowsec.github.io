@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Sign in with Google using Ionic and Django | volodya</title>
+	<meta name="description" content="Challenges and solutions implementing a simple Google SignIn in Android apps.">
+	<meta name="author" content="plowsec">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link href="/theme/css/colorbox.css" rel="stylesheet">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="@volodiyah">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="@volodiyah">
+	<meta property="og:title" content="Sign in with Google using Ionic and Django">
+	<meta property="og:description" content="Challenges and solutions implementing a simple Google SignIn in Android apps.">
+	<meta property="og:image" content="/images/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/google-signin-ionic-angular-django.html">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css?f0d6ece5" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FF8000">
+
+	<meta name="msapplication-TileColor" content="#FF8000">
+	<meta name="msapplication-TileImage" content="/images/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/images/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/images/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/images/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/images/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/images/icons/avatar.png"></a>
+			<div id="name"><a href="/">volodya</a></div>
+			<div id="bio">Security Engineer interested in Program Analysis, (de)obfuscation and antivirus engines. Stripped binaries || GTFO.</div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>
+			</div>
+
+			<div id="social">
+				<a href="mailto:united.marshmallow(at)gmail.com" title="Email (united.marshmallow(at)gmail.com)" class="icon fa fa-envelope"></a>
+				<a href="https://twitter.com/PlowSec" title="Twitter" class="icon fa fa-twitter"></a>
+				<a href="https://github.com/plowsec" title="GitHub" class="icon fa fa-github"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/google-signin-ionic-angular-django.html" title="Permalink to Sign in with Google using Ionic and Django">Sign in with Google using Ionic and&nbsp;Django</a></h1>
+	<time class="date" datetime="2023-08-27 00:00:00+02:00">Sun 27 August 2023</time>
+	<div class="content">
+		<div class="toc"><span class="toctitle">Table of contents:</span><ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#chatgpt">ChatGPT</a></li>
+<li><a href="#stack">Stack</a></li>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#google-cloud-developper-console">Google Cloud Developper Console</a><ul>
+<li><a href="#credentials">Credentials</a></li>
+<li><a href="#oauth-consent-screen">OAuth Consent Screen</a><ul>
+<li><a href="#first-screen">First&nbsp;screen</a></li>
+<li><a href="#second-screen">Second&nbsp;Screen</a></li>
+<li><a href="#third-screen-scopes">Third Screen:&nbsp;Scopes</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#frontend">Frontend</a><ul>
+<li><a href="#html"><span class="caps">HTML</span></a></li>
+<li><a href="#css"><span class="caps">CSS</span></a></li>
+<li><a href="#component">Component</a></li>
+</ul>
+</li>
+<li><a href="#backend">Backend</a><ul>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#backend-implementation-of-google-signin">Backend implementation of Google&nbsp;SignIn</a></li>
+<li><a href="#jwt-implementation"><span class="caps">JWT</span> implementation</a><ul>
+<li><a href="#user-model">User&nbsp;model</a></li>
+<li><a href="#rest_framework_jwt">rest_framework_jwt</a></li>
+<li><a href="#django-rest-framework-simplejwt">django-rest-framework-simplejwt</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#security">Security</a><ul>
+<li><a href="#jwt"><span class="caps">JWT</span></a></li>
+<li><a href="#oauth">OAuth</a><ul>
+<li><a href="#token-verification">Token&nbsp;Verification</a></li>
+<li><a href="#using-id-token-information">Using <span class="caps">ID</span> Token&nbsp;Information</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#ionicangular-vs-other-frameworks">Ionic/Angular vs other&nbsp;frameworks</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+<h2 id="introduction">Introduction</h2>
+<p>Implementing this feature took me about 10 hours. It&#8217;s not hard per se, but reading around on the internet showed various options. Of course, the ones I chose first brought me only pain and suffering&nbsp;🥲.</p>
+<p>So here is a quick article so that other people may benefit from my mistakes. The most important&nbsp;lessons:</p>
+<ul>
+<li>Do not use <code>rest_framework_jwt</code></li>
+<li>Take the time to fill in every field in Google OAuth Consent Screens&nbsp;settings</li>
+</ul>
+<h2 id="chatgpt">ChatGPT</h2>
+<p>Also, this app is an experiment to see for myself if I&#8217;m soon going to be replaced by ChatGPT&amp;Co. ChatGPT did around 60% of the work. It makes mistakes and needs direction, but most things can be fixed by describing what the problem is. I&#8217;ve put arbitrary numbers to show how useful this <span class="caps">LLM</span> was for me in the various domains of expertise required to make an Android app from&nbsp;scratch:</p>
+<ul>
+<li>Design / Architecture: 80%. Its analysis matched with what I was going to&nbsp;do.</li>
+<li>Backend: 90%. Sometimes it chooses unnecessary (and unmaintained) dependencies and I have to tell it not&nbsp;to.</li>
+<li>Frontend (<span class="caps">JS</span>): 60%. Lots of mistakes or half-assed&nbsp;work.</li>
+<li>Frontend (<span class="caps">HTML</span>/<span class="caps">CSSS</span>): 99%. I&#8217;ve only had to intervene to fix minor things. But <span class="caps">UI</span> design is really not my thing&nbsp;anyway.</li>
+<li>Deployment: 30%. Also, buying a domain and setting up <span class="caps">TLS</span> is not something I expect a <span class="caps">LLM</span> to be helpful&nbsp;with.</li>
+</ul>
+<p>During development, it happened several times that I was surprised (in a good way) about the ideas or results it provided. At the end of the day, I don&#8217;t think it currently replaces a software engineer, but it can certainly help an underachieving engineer to approximate the work done by a skilled one in domains where there are lots of open-source code. For instance, I&#8217;ve also recently developed an <span class="caps">IDA</span> Pro extension and ChatGPT was completely useless. Worse than that, it kept trolling me non-existent APIs or&nbsp;flags.</p>
+<h2 id="stack">Stack</h2>
+<ol>
+<li>Ionic</li>
+<li>Angular</li>
+<li>Capacitor</li>
+<li>Django</li>
+</ol>
+<p>We will use Json Web Tokens (<span class="caps">JWT</span>) for authenticated&nbsp;sessions.</p>
+<h2 id="overview">Overview</h2>
+<ol>
+<li>Settings in the Google Cloud Dev&nbsp;console</li>
+<li>Frontend: &#8220;Sign in with&nbsp;Google&#8221;</li>
+<li>Backend: verifying the <code>id_token</code></li>
+<li>Backend: login the&nbsp;user</li>
+<li>Frontend: receive and store the <code>access_token</code></li>
+<li>Testing on Android&nbsp;:(</li>
+</ol>
+<h2 id="google-cloud-developper-console">Google Cloud Developper&nbsp;Console</h2>
+<p>⚠️ Don&#8217;t skip this section&nbsp;⚠️</p>
+<p>When testing on Android, I got this&nbsp;error:</p>
+<p><a class="mybox" href="/images/something_went_wrong.png" title="The infamous error: Something went wrong"><img alt="The infamous error: 'Something went wrong'" src="/images/something_went_wrong.png" width="300px"></a></p>
+<p>This error is quite mysterious, there is no documentation available and the &#8220;fixes&#8221; you can find by googling it show that no one has any idea why exactly it happens, so everyone and their mother come up with a checklist of things to put in your app. As of September 2023, this article aims to be the most comprehensive checklists of things to do that can avoid that&nbsp;error. </p>
+<p>Spoiler: it&#8217;s not common sense, like at&nbsp;all.</p>
+<h3 id="credentials">Credentials</h3>
+<ol>
+<li>Create a Client <span class="caps">ID</span> for the web&nbsp;application</li>
+<li>Create a Client <span class="caps">ID</span> for each <span class="caps">SHA1</span> hash of your Android&nbsp;application</li>
+<li>iOS: I don&#8217;t know&nbsp;yet</li>
+</ol>
+<p>Important: in your Android application, and your entire <code>Ionic</code> project, each time you have to provide a <code>ClientID</code>, you will provide the Web one (step 1), not the Android&nbsp;one. </p>
+<p>You still need to have ones configured for Android on the Google Cloud Developper Console. Go figure&nbsp;🥲.</p>
+<p>Fill-in the information like&nbsp;this:</p>
+<p><a class="mybox" href="/images/client_id_web_1.png" title="Creating a ClientID"><img alt="Creating a ClientID" src="/images/client_id_web_1.png" width="300px"></a>
+<a class="mybox" href="/images/client_id_android_1.png" title="Creating a ClientID"><img alt="Creating a ClientID" src="/images/client_id_android_1.png" width="300px"></a></p>
+<p>To get the <code>SHA1</code> hashes, run the command and copy the values for <span class="caps">SHA1</span>:</p>
+<div class="codehilite"><pre><span></span><code>./gradlew<span class="w"> </span>signinReport
+</code></pre></div>
+
+<p>Important: you must have one <code>ClientID</code> per hash you actually&nbsp;use:</p>
+<ol>
+<li>I changed the keystore once by mistake, and I had to reference the old one still in <code>~/.android/debug.keystore</code></li>
+<li>The new&nbsp;keystore</li>
+<li>When you publish to Google Play Store, a new hash will be made, so configure this one also, otherwise you get the infamous &#8220;Something Went Wrong&#8221; with error code&nbsp;10.</li>
+</ol>
+<h3 id="oauth-consent-screen">OAuth Consent&nbsp;Screen</h3>
+<p>Fill-in every field to avoid the mysterious error shown&nbsp;above.</p>
+<h4 id="first-screen">First&nbsp;screen</h4>
+<p><a class="mybox" href="/images/oauth_1.png" title="OAuth Consent Screen 1"><img alt="OAuth Consent Screen 1" src="/images/oauth_1.png" width="300px"></a></p>
+<h4 id="second-screen">Second&nbsp;Screen</h4>
+<p><a class="mybox" href="/images/oauth_2.png" title="OAuth Consent Screen 2"><img alt="OAuth Consent Screen 2" src="/images/oauth_2.png" width="300px"></a></p>
+<h4 id="third-screen-scopes">Third Screen:&nbsp;Scopes</h4>
+<p><a class="mybox" href="/images/oauth_scopes.png" title="OAuth Consent Screen Scopes"><img alt="OAuth Consent Screen 3" src="/images/oauth_scopes.png" width="300px"></a></p>
+<h4 id="conclusion">Conclusion</h4>
+<ul>
+<li>In Scopes, match the field you use in <code>GoogleAuth</code> library, otherwise you get the Error Code&nbsp;10.</li>
+<li>Provide a support and developer e-mail address, otherwise Error Code&nbsp;10.</li>
+<li>Match the protocol you use in your app when you provide the links in the screen of OAuth Consent Screen, otherwise Error Code&nbsp;10.</li>
+</ul>
+<h2 id="frontend">Frontend</h2>
+<div class="codehilite"><pre><span></span><code>ionic<span class="w"> </span>generate<span class="w"> </span>page<span class="w"> </span>login
+</code></pre></div>
+
+<p>Our code&nbsp;will:</p>
+<ol>
+<li>Check if the user is already logged in by checking if the access token is present in the Local Storage (see the Security sections if you care about&nbsp;that)</li>
+<li>SignIn with Google&nbsp;(client-side)</li>
+<li>Send the id_token to your backend to verify&nbsp;it</li>
+<li>The frontend receives and stores the access token given by the backend if the login is&nbsp;successful.</li>
+<li>The user is now logged-in, you can redirect them to the &#8220;protected&#8221;&nbsp;component.</li>
+</ol>
+<p>Punch in the following&nbsp;code:</p>
+<h3 id="html"><span class="caps">HTML</span></h3>
+<div class="codehilite"><pre><span></span><code><span class="p">&lt;</span><span class="nt">ion-header</span> <span class="err">[</span><span class="na">translucent</span><span class="err">]=&quot;</span><span class="na">true</span><span class="err">&quot;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">ion-toolbar</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">ion-title</span><span class="p">&gt;</span>login<span class="p">&lt;/</span><span class="nt">ion-title</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">ion-toolbar</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">ion-header</span><span class="p">&gt;</span>
+
+<span class="p">&lt;</span><span class="nt">ion-content</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;login-page&quot;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;header&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">ion-title</span><span class="p">&gt;</span>You App name<span class="p">&lt;/</span><span class="nt">ion-title</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Some inspiring slogan.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;login-container&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">ion-button</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;google-login-btn&quot;</span> <span class="err">(</span><span class="na">click</span><span class="err">)=&quot;</span><span class="na">googleSignIn</span><span class="err">()&quot;</span><span class="p">&gt;</span>
+      <span class="p">&lt;</span><span class="nt">ion-icon</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;logo-google&quot;</span> <span class="na">slot</span><span class="o">=</span><span class="s">&quot;start&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">ion-icon</span><span class="p">&gt;</span>
+      Login with Google
+    <span class="p">&lt;/</span><span class="nt">ion-button</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;footer&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Some filler text<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">ion-content</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<h3 id="css"><span class="caps">CSS</span></h3>
+<div class="codehilite"><pre><span></span><code><span class="p">.</span><span class="nc">login-page</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">display</span><span class="p">:</span><span class="w"> </span><span class="kc">flex</span><span class="p">;</span>
+<span class="w">    </span><span class="k">flex-direction</span><span class="p">:</span><span class="w"> </span><span class="kc">column</span><span class="p">;</span>
+<span class="w">    </span><span class="k">justify-content</span><span class="p">:</span><span class="w"> </span><span class="kc">space-between</span><span class="p">;</span>
+<span class="w">    </span><span class="k">height</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="kt">%</span><span class="p">;</span>
+<span class="w">    </span><span class="k">padding</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">background-size</span><span class="p">:</span><span class="w"> </span><span class="kc">cover</span><span class="p">;</span>
+<span class="w">    </span><span class="k">background-position</span><span class="p">:</span><span class="w"> </span><span class="kc">center</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="p">.</span><span class="nc">header</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">text-align</span><span class="p">:</span><span class="w"> </span><span class="kc">center</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="p">.</span><span class="nc">header</span><span class="w"> </span><span class="nt">ion-title</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mi">28</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">font-weight</span><span class="p">:</span><span class="w"> </span><span class="kc">bold</span><span class="p">;</span>
+<span class="w">    </span><span class="k">color</span><span class="p">:</span><span class="w"> </span><span class="mh">#4285F4</span><span class="p">;</span><span class="w">  </span><span class="c">/* Google&#39;s blue color */</span>
+<span class="w">    </span><span class="k">margin-bottom</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="p">.</span><span class="nc">header</span><span class="w"> </span><span class="nt">p</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">color</span><span class="p">:</span><span class="w"> </span><span class="mh">#666</span><span class="p">;</span>
+<span class="w">    </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="p">.</span><span class="nc">login-container</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">display</span><span class="p">:</span><span class="w"> </span><span class="kc">flex</span><span class="p">;</span>
+<span class="w">    </span><span class="k">flex-direction</span><span class="p">:</span><span class="w"> </span><span class="kc">column</span><span class="p">;</span>
+<span class="w">    </span><span class="k">gap</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="p">.</span><span class="nc">google-login-btn</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">--background</span><span class="p">:</span><span class="w"> </span><span class="mh">#4285F4</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color</span><span class="p">:</span><span class="w"> </span><span class="kc">white</span><span class="p">;</span>
+<span class="w">    </span><span class="k">border-radius</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">display</span><span class="p">:</span><span class="w"> </span><span class="kc">flex</span><span class="p">;</span>
+<span class="w">    </span><span class="k">align-items</span><span class="p">:</span><span class="w"> </span><span class="kc">center</span><span class="p">;</span>
+<span class="w">    </span><span class="k">justify-content</span><span class="p">:</span><span class="w"> </span><span class="kc">center</span><span class="p">;</span>
+<span class="w">    </span><span class="k">font-weight</span><span class="p">:</span><span class="w"> </span><span class="kc">bold</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="p">.</span><span class="nc">footer</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">text-align</span><span class="p">:</span><span class="w"> </span><span class="kc">center</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="p">.</span><span class="nc">footer</span><span class="w"> </span><span class="nt">p</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">color</span><span class="p">:</span><span class="w"> </span><span class="mh">#666</span><span class="p">;</span>
+<span class="w">    </span><span class="k">font-style</span><span class="p">:</span><span class="w"> </span><span class="kc">italic</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+</code></pre></div>
+
+<h3 id="component">Component</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Component</span><span class="p">,</span><span class="w"> </span><span class="nx">OnInit</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@angular/core&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">GoogleAuth</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@codetrix-studio/capacitor-google-auth&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">HttpClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@angular/common/http&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">environment</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;src/environments/environment&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Preferences</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@capacitor/preferences&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Router</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@angular/router&#39;</span><span class="p">;</span>
+
+
+<span class="err">@</span><span class="nx">Component</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">selector</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;app-login&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">templateUrl</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;./login.page.html&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">styleUrls</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;./login.page.scss&#39;</span><span class="p">],</span>
+<span class="p">})</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">LoginPage</span><span class="w"> </span><span class="kr">implements</span><span class="w"> </span><span class="nx">OnInit</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">  </span><span class="nx">isLoggedIn</span><span class="o">:</span><span class="w"> </span><span class="kr">boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+
+<span class="w">  </span><span class="kr">constructor</span><span class="p">(</span>
+<span class="w">      </span><span class="kr">private</span><span class="w"> </span><span class="nx">http</span><span class="o">:</span><span class="w"> </span><span class="nx">HttpClient</span><span class="p">,</span>
+<span class="w">      </span><span class="kr">private</span><span class="w"> </span><span class="nx">router</span><span class="o">:</span><span class="w"> </span><span class="nx">Router</span><span class="p">,</span>
+
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">ngOnInit</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="c1">// Check if user is already logged in</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">tokenInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">Preferences</span><span class="p">.</span><span class="nx">get</span><span class="p">({</span><span class="w"> </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;auth_token&#39;</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">tokenInfo</span><span class="p">.</span><span class="nx">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="nx">isLoggedIn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w"> </span>
+<span class="w">    </span><span class="p">}</span>
+
+
+<span class="w">    </span><span class="nx">GoogleAuth</span><span class="p">.</span><span class="nx">initialize</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">clientId</span><span class="o">:</span><span class="w"> </span><span class="nx">environment</span><span class="p">.</span><span class="nx">GOOGLE_CLIENT_ID</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">scopes</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;email&#39;</span><span class="p">],</span>
+<span class="w">      </span><span class="nx">grantOfflineAccess</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="c1">//}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">googleSignIn</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">googleUser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">GoogleAuth</span><span class="p">.</span><span class="nx">signIn</span><span class="p">();</span>
+<span class="w">        </span><span class="c1">// Send googleUser.authentication.idToken to your backend for verification and login</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">idToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">googleUser</span><span class="p">.</span><span class="nx">authentication</span><span class="p">.</span><span class="nx">idToken</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">sendTokenToBackend</span><span class="p">(</span><span class="nx">idToken</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">&#39;Google Auth Error: &#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nx">sendTokenToBackend</span><span class="p">(</span><span class="nx">token</span><span class="o">:</span><span class="w"> </span><span class="nx">string</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Use Angular&#39;s HttpClient or another method to POST the token to your Django backend</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">http</span><span class="p">.</span><span class="nx">post</span><span class="o">&lt;</span><span class="nx">any</span><span class="o">&gt;</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">environment</span><span class="p">.</span><span class="nx">BACKEND_URL</span><span class="si">}</span><span class="sb">/api/login/google`</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">token</span><span class="o">:</span><span class="w"> </span><span class="nx">token</span><span class="w"> </span><span class="p">}).</span><span class="nx">subscribe</span><span class="p">(</span>
+<span class="w">      </span><span class="nx">response</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Successful login&quot;</span><span class="p">);</span>
+<span class="w">          </span><span class="nx">Preferences</span><span class="p">.</span><span class="nx">set</span><span class="p">({</span><span class="w"> </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;auth_token&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">value</span><span class="o">:</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">token</span><span class="w"> </span><span class="p">});</span>
+<span class="w">          </span><span class="k">this</span><span class="p">.</span><span class="nx">isLoggedIn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+
+<span class="w">          </span><span class="c1">// Redirect to your component that requires authenticated users</span>
+<span class="w">          </span><span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">navigate</span><span class="p">([</span><span class="s1">&#39;/authenticated&#39;</span><span class="p">]);</span>
+
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nx">error</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Error logging in: &quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">);</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h2 id="backend">Backend</h2>
+<p>I chose <code>Django</code> for the backend because the setup is quick, authentication and authorization can be configured right away and the database engine is top&nbsp;notch.</p>
+<h3 id="dependencies">Dependencies</h3>
+<p>requirements.txt:</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">social</span><span class="o">-</span><span class="nx">auth</span><span class="o">-</span><span class="nx">app</span><span class="o">-</span><span class="nx">django</span>
+<span class="nx">djangorestframework</span>
+<span class="nx">django</span><span class="o">-</span><span class="nx">rest</span><span class="o">-</span><span class="nx">framework</span><span class="o">-</span><span class="nx">simplejwt</span>
+</code></pre></div>
+
+<h3 id="backend-implementation-of-google-signin">Backend implementation of Google&nbsp;SignIn</h3>
+<p>Add a route in <code>urls.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;api/login/google/&#39;</span><span class="p">,</span> <span class="n">google_login</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;google_login&#39;</span><span class="p">),</span>
+    <span class="c1"># ... your other routes</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<p>Punch-in the following code in <code>views.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">social_core.exceptions</span> <span class="kn">import</span> <span class="n">AuthTokenError</span>
+<span class="kn">from</span> <span class="nn">google.oauth2</span> <span class="kn">import</span> <span class="n">id_token</span> <span class="k">as</span> <span class="n">google_id_token</span>
+<span class="kn">from</span> <span class="nn">google.auth.transport</span> <span class="kn">import</span> <span class="n">requests</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<span class="k">def</span> <span class="nf">google_login</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">body_unicode</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="n">body_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">body_unicode</span><span class="p">)</span>
+    <span class="n">id_token</span> <span class="o">=</span> <span class="n">body_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
+
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">idinfo</span> <span class="o">=</span> <span class="n">google_id_token</span><span class="o">.</span><span class="n">verify_oauth2_token</span><span class="p">(</span><span class="n">id_token</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Request</span><span class="p">(),</span> <span class="n">settings</span><span class="o">.</span><span class="n">SOCIAL_AUTH_GOOGLE_OAUTH2_CLIENT_ID</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email_verified&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span><span class="s1">&#39;Go away hacker&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+
+        <span class="c1"># ID token is valid. Get the user&#39;s Google Account ID from the decoded token</span>
+        <span class="n">user_id</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Extract email and handle user in your DB</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;User ID: </span><span class="si">{</span><span class="n">user_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Email: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="n">AuthTokenError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid token&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+</code></pre></div>
+
+<p>This code allows you to verify the <code>id_token</code> provided by the client. If the login was successful, you can recover the user&#8217;s email and id from the <code>idinfo</code> variable. If not, <code>AuthTokenError</code> is&nbsp;raised.</p>
+<h3 id="jwt-implementation"><span class="caps">JWT</span>&nbsp;implementation</h3>
+<p>The goal here is to setup a session for the user (to remember that they logged in). To do that, we&#8217;ll create an access token (<span class="caps">JWT</span>) and send it back to the&nbsp;client. </p>
+<p>Then, the client must include this token in every request in the Authorization&nbsp;header.</p>
+<h4 id="user-model">User&nbsp;model</h4>
+<p>We need to remember users, so let&#8217;s create a custom user&nbsp;model.</p>
+<p>Create a new app. Let&#8217;s call it&nbsp;accounts.</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>manage.py<span class="w"> </span>startapp<span class="w"> </span>accounts
+</code></pre></div>
+
+<p>Inside the <code>models.py</code> of the accounts app, define your custom user&nbsp;model:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">AbstractUser</span>
+
+<span class="k">class</span> <span class="nc">CustomUser</span><span class="p">(</span><span class="n">AbstractUser</span><span class="p">):</span>
+    <span class="k">pass</span>
+</code></pre></div>
+
+<p>Update <code>settings.py</code> to use the custom user&nbsp;model:</p>
+<div class="codehilite"><pre><span></span><code>AUTH_USER_MODEL = &#39;accounts.CustomUser&#39;
+</code></pre></div>
+
+<p>In <code>views.py</code>:</p>
+<div class="codehilite"><pre><span></span><code>User = get_user_model()
+</code></pre></div>
+
+<p>Create migrations and&nbsp;migrate:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>manage.py<span class="w"> </span>makemigrations
+python<span class="w"> </span>manage.py<span class="w"> </span>migrate
+</code></pre></div>
+
+<h4 id="rest_framework_jwt">rest_framework_jwt</h4>
+<p>First, I opted for <code>rest_framework_jwt</code> but it was a mistake. Once I was done with the implementation, testing Google Sign In triggered this&nbsp;error:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Traceback</span><span class="w"> </span><span class="p">(</span><span class="n">most</span><span class="w"> </span><span class="n">recent</span><span class="w"> </span><span class="n">call</span><span class="w"> </span><span class="n">last</span><span class="p">):</span>
+<span class="w">  </span><span class="n">File</span><span class="w"> </span><span class="s2">&quot;/home/xxx/myapp_name/backend/lib/python3.11/site-packages/django/core/handlers/exception.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="mi">55</span><span class="p">,</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">inner</span>
+<span class="w">    </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_response</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+<span class="w">               </span><span class="o">^^^^^^^^^^^^^^^^^^^^^</span>
+<span class="w">  </span><span class="n">File</span><span class="w"> </span><span class="s2">&quot;/home/xxx/myapp_name/backend/lib/python3.11/site-packages/django/core/handlers/base.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="mi">197</span><span class="p">,</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">_get_response</span>
+<span class="w">    </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wrapped_callback</span><span class="p">(</span><span class="n">request</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">callback_args</span><span class="p">,</span><span class="w"> </span><span class="o">**</span><span class="n">callback_kwargs</span><span class="p">)</span>
+<span class="w">               </span><span class="o">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+<span class="w">  </span><span class="n">File</span><span class="w"> </span><span class="s2">&quot;/home/xxx/myapp_name/backend/lib/python3.11/site-packages/django/views/decorators/csrf.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="mi">56</span><span class="p">,</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">wrapper_view</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">view_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="w">           </span><span class="o">^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+<span class="w">  </span><span class="n">File</span><span class="w"> </span><span class="s2">&quot;/home/xxx/myapp_name/backend/myapp_name/myapp_name_app/views.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="mi">326</span><span class="p">,</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">google_login</span>
+<span class="w">    </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jwt_encode_handler</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="w">            </span><span class="o">^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+<span class="w">  </span><span class="n">File</span><span class="w"> </span><span class="s2">&quot;/home/xxx/myapp_name/backend/lib/python3.11/site-packages/rest_framework_jwt/utils.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">jwt_encode_handler</span>
+<span class="w">    </span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="w">      </span><span class="o">^^^^^^</span>
+<span class="n">AttributeError</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;str&#39;</span><span class="w"> </span><span class="n">object</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">attribute</span><span class="w"> </span><span class="s1">&#39;decode&#39;</span>
+</code></pre></div>
+
+<p>Turns out, to fix that you have to downgrade a dependency or patch the library yourself. Since what we want to do is the most basic <span class="caps">JWT</span>-related feature, there is no way we will do&nbsp;that.</p>
+<h4 id="django-rest-framework-simplejwt">django-rest-framework-simplejwt</h4>
+<p>The best solution imho is to use <code>django-rest-framework-simplejwt</code> instead.</p>
+<p>Note: I had to install it from <code>git</code> on ArchLinux&nbsp;because:</p>
+<div class="codehilite"><pre><span></span><code><span class="nl">upload</span><span class="p">:</span><span class="w"> </span><span class="mi">17</span><span class="err">:</span><span class="mi">33</span><span class="w"> </span><span class="o">~/</span><span class="n">myapp_name</span><span class="o">/</span><span class="n">backend</span><span class="o">/</span><span class="n">myapp_name</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">..</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">python3</span><span class="w"> </span><span class="o">-</span><span class="n">m</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">django</span><span class="o">-</span><span class="n">rest</span><span class="o">-</span><span class="n">framework</span><span class="o">-</span><span class="n">simplejwt</span>
+<span class="nl">ERROR</span><span class="p">:</span><span class="w"> </span><span class="n">Could</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="n">satisfies</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">requirement</span><span class="w"> </span><span class="n">django</span><span class="o">-</span><span class="n">rest</span><span class="o">-</span><span class="n">framework</span><span class="o">-</span><span class="n">simplejwt</span><span class="w"> </span><span class="p">(</span><span class="k">from</span><span class="w"> </span><span class="nl">versions</span><span class="p">:</span><span class="w"> </span><span class="k">none</span><span class="p">)</span>
+<span class="nl">ERROR</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">matching</span><span class="w"> </span><span class="n">distribution</span><span class="w"> </span><span class="k">found</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">django</span><span class="o">-</span><span class="n">rest</span><span class="o">-</span><span class="n">framework</span><span class="o">-</span><span class="n">simplejwt</span>
+
+<span class="o">[</span><span class="n">notice</span><span class="o">]</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="k">release</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="nl">available</span><span class="p">:</span><span class="w"> </span><span class="mf">22.3.1</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mf">23.2.1</span>
+<span class="o">[</span><span class="n">notice</span><span class="o">]</span><span class="w"> </span><span class="k">To</span><span class="w"> </span><span class="k">update</span><span class="p">,</span><span class="w"> </span><span class="nl">run</span><span class="p">:</span><span class="w"> </span><span class="n">python3</span><span class="w"> </span><span class="o">-</span><span class="n">m</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="c1">--upgrade pip</span>
+</code></pre></div>
+
+<p>I fixed it&nbsp;with:</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">../bin/python3 -m pip install git+https://github.com/jazzband/djangorestframework-simplejwt.git</span>
+</code></pre></div>
+
+<p>Modify <code>settings.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+
+<span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="o">...</span>
+    <span class="s1">&#39;rest_framework_simplejwt.token_blacklist&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">AUTHENTICATION_BACKENDS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="o">...</span>
+    <span class="s1">&#39;rest_framework_simplejwt.authentication.JWTAuthentication&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">REST_FRAMEWORK</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">...</span>
+    <span class="s1">&#39;DEFAULT_AUTHENTICATION_CLASSES&#39;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s1">&#39;rest_framework_simplejwt.authentication.JWTAuthentication&#39;</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">SIMPLE_JWT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;ACCESS_TOKEN_LIFETIME&#39;</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">60</span><span class="p">),</span>
+    <span class="s1">&#39;ROTATE_REFRESH_TOKENS&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;ALGORITHM&#39;</span><span class="p">:</span> <span class="s1">&#39;HS256&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SIGNING_KEY&#39;</span><span class="p">:</span> <span class="n">SECRET_KEY</span><span class="p">,</span>
+    <span class="s1">&#39;VERIFYING_KEY&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;AUTH_HEADER_TYPES&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;Bearer&#39;</span><span class="p">,),</span>
+    <span class="s1">&#39;USER_ID_FIELD&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;USER_ID_CLAIM&#39;</span><span class="p">:</span> <span class="s1">&#39;user_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AUTH_TOKEN_CLASSES&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;rest_framework_simplejwt.tokens.AccessToken&#39;</span><span class="p">,),</span>
+    <span class="s1">&#39;TOKEN_TYPE_CLAIM&#39;</span><span class="p">:</span> <span class="s1">&#39;token_type&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>In <code>views.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">rest_framework_simplejwt.tokens</span> <span class="kn">import</span> <span class="n">RefreshToken</span>
+
+<span class="k">def</span> <span class="nf">get_tokens_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="n">refresh</span> <span class="o">=</span> <span class="n">RefreshToken</span><span class="o">.</span><span class="n">for_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;refresh&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">refresh</span><span class="p">),</span>
+        <span class="s1">&#39;access&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">refresh</span><span class="o">.</span><span class="n">access_token</span><span class="p">),</span>
+    <span class="p">}</span>
+</code></pre></div>
+
+<p>Replace the google_login controller&nbsp;with:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">rest_framework_simplejwt.tokens</span> <span class="kn">import</span> <span class="n">RefreshToken</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span> <span class="nn">google.oauth2</span> <span class="kn">import</span> <span class="n">id_token</span>
+<span class="kn">from</span> <span class="nn">google.auth.transport</span> <span class="kn">import</span> <span class="n">requests</span>
+
+<span class="k">def</span> <span class="nf">google_login</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">idinfo</span> <span class="o">=</span> <span class="n">id_token</span><span class="o">.</span><span class="n">verify_oauth2_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Request</span><span class="p">(),</span> <span class="n">settings</span><span class="o">.</span><span class="n">SOCIAL_AUTH_GOOGLE_OAUTH2_CLIENT_ID</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email_verified&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span><span class="s1">&#39;Go away hacker&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+
+        <span class="c1"># ID token is valid. Get the user&#39;s Google Account ID from the decoded token</span>
+        <span class="n">user_id</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Extract email and handle user in your DB</span>
+        <span class="n">user</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">email</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">created</span><span class="p">:</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">make_random_password</span><span class="p">())</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="c1"># Generate JWT token using django-rest-framework-simplejwt</span>
+        <span class="n">refresh</span> <span class="o">=</span> <span class="n">RefreshToken</span><span class="o">.</span><span class="n">for_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">access_token</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">refresh</span><span class="o">.</span><span class="n">access_token</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># includes AuthTokenError</span>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid token&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;token&#39;</span><span class="p">:</span> <span class="n">access_token</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">})</span>
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>python manage.py makemigrations
+python manage.py migrate
+</code></pre></div>
+
+<h2 id="security">Security</h2>
+<h3 id="jwt"><span class="caps">JWT</span></h3>
+<p>In the frontend, we made sure to store the access_token in the Local Storage. For security reasons, that&#8217;s no okay&nbsp;because:</p>
+<ul>
+<li>The token can be ex-filtrated in case you have a Cross-Site Scripting vulnerability in your&nbsp;app.</li>
+<li>The token can be recovered by an attacker if the user&#8217;s device is lost or stolen and the attacker manages to gain root access on it, since the token is stored as&nbsp;plain-text.</li>
+</ul>
+<p><code>Ionic</code> provides a library for secure storage, but only in <code>Ionic</code> Enterprise. I recommend you implement that feature yourself, making sure that you don&#8217;t use custom crypto algorithms and leverages the Platform <span class="caps">API</span> so that the encryption keys are stored in the Secure World of your&nbsp;device.</p>
+<h3 id="oauth">OAuth</h3>
+<h4 id="token-verification">Token&nbsp;Verification</h4>
+<p>When a user signs in with Google, Google provides an <span class="caps">ID</span> token, which is a <span class="caps">JWT</span> (<span class="caps">JSON</span> Web Token). This token contains information about the user, but before using this information, you need to verify the token to ensure its&nbsp;authenticity.</p>
+<p>Why is it&nbsp;important?</p>
+<p>Without verifying the token, a malicious actor could forge a token with fabricated information. If your application trusted this without verification, it could lead to security&nbsp;issues.</p>
+<p>What happens during&nbsp;verification?</p>
+<ul>
+<li>Signature Verification: The <span class="caps">ID</span> token is signed by Google. Verifying the signature ensures the token hasn&#8217;t been tampered with. Google signs the <span class="caps">ID</span> token using an <span class="caps">RSA</span> key, and during verification, the correct public key, fetched from Google&#8217;s servers, is used to verify the&nbsp;signature.</li>
+<li>Audience Verification: The token includes an <code>aud</code> (audience) claim. This should contain your app&#8217;s client <span class="caps">ID</span>, ensuring that the token was intended for your&nbsp;application.</li>
+<li>Expiration Verification: The token includes an <code>exp</code> (expiration time) claim. This is checked to ensure the token hasn&#8217;t&nbsp;expired.</li>
+<li>Issuer Verification: The token&#8217;s <code>iss</code> (issuer) claim should match accounts.google.com or&nbsp;https://accounts.google.com.</li>
+</ul>
+<p>By using Google&#8217;s <code>verify_oauth2_token method</code>, we are ensuring all these verifications are carried&nbsp;out.</p>
+<h4 id="using-id-token-information">Using <span class="caps">ID</span> Token&nbsp;Information</h4>
+<p>After the <span class="caps">ID</span> token is verified, you can trust the claims (data fields) inside it. One of the most commonly used claims is the email address. However, before using this email, you should also ensure that it has been verified by&nbsp;Google.</p>
+<p>Why is this important?
+If you are using the email claim for anything important (like creating a new user in your system), you want to ensure that the email truly belongs to the user. Otherwise, someone could potentially claim any email address (even one they don&#8217;t own) during&nbsp;registration.</p>
+<p>How to do it?
+Google&#8217;s <span class="caps">ID</span> token contains an <code>email_verified</code> claim. This is a boolean that indicates whether the user has verified their email&nbsp;address.</p>
+<p>In your code, before using the email claim, you should&nbsp;check:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">if</span> <span class="n">idinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email_verified&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Handle the case where the email hasn&#39;t been verified</span>
+</code></pre></div>
+
+<p>By following this practice, you are ensuring that the email address in the token is not only verified by Google&#8217;s systems but also actually belongs to the person presenting the&nbsp;token.</p>
+<h2 id="ionicangular-vs-other-frameworks"><code>Ionic</code>/Angular vs other&nbsp;frameworks</h2>
+<p>Before starting this project, I specifically researched this choice of framework. I ended up chosing <code>Ionic</code> but I (kind of) regret&nbsp;it.</p>
+<p>Pros:</p>
+<ul>
+<li>Scaffholding</li>
+<li>Commands to automate the deployment on real&nbsp;devices</li>
+<li>Modern</li>
+<li>Good&nbsp;documentation</li>
+<li>My company&#8217;s clients often use it so now I can better understand their&nbsp;perspective</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>Deprecates too many APIs and modules: a lot of the documentation made on blogs is&nbsp;outdated</li>
+<li>You need to obfuscate the code yourself if you want to prevent low-effort copies of your&nbsp;app.</li>
+</ul>
+<p>Now that I know a little bit better the framework, I would choose ReactNative. It has the same advantages but I really like the fact that the app is not that trivial to reverse-engineer out-of-the-box thanks to Hermes, now used by&nbsp;default.</p>
+<p>You can check how easy it is to reverse engineer you app with <code>apktool</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">apktool</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="n">yourapp</span><span class="o">.</span><span class="n">apk</span>
+</code></pre></div>
+
+<p>Then <code>grep</code> for some snippets of your code to know it&#8217;s location in the resulting folder. You&#8217;ll see anyone can pretty much copy paste your code into a new app, although they will still need to replicate the backend from&nbsp;scratch.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>https://enappd.com/blog/google-login-in-ionic-capacitor-app-with-angular/178/</li>
+<li>https://github.com/CodetrixStudio/CapacitorGoogleAuth/issues/204</li>
+<li>https://github.com/CodetrixStudio/CapacitorGoogleAuth/issues/220</li>
+</ul>
+	</div>
+
+	<div id="related-articles">
+		<a href="/angr-tips-and-tricks.html" id="prev-neighbour">Getting acquainted with angr &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com">Pelican</a> (<a href="https://github.com/iKevinY/pneumatic">Pneumatic Theme</a>) and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<!-- Make sure jquery is loaded first, then load colorbox -->
+<script src="/theme/js/jquery.colorbox-min.js"></script>
+<script src="/theme/js/load-colorbox.js"></script>
+</body>
+</html>
