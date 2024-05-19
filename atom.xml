@@ -47,7 +47,7 @@
 &lt;p&gt;&lt;strong&gt;Download Subtitles&lt;/strong&gt;: Use a tool like &lt;a href="https://downsub.com"&gt;DownSub&lt;/a&gt; to download the subtitles of the video. This gives you a written version of the more accessible&amp;nbsp;content.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;a class="mybox" href="/images/download_subs.png" title="Downloading subtitles"&gt;&lt;img alt="Downloading subtitles" src="/images/download_subs.png" width="300px"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class="mybox" href="/images/download_subs.png" title="Downloading subtitles"&gt;&lt;img alt="Downloading subtitles" src="/images/download_subs.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;strong&gt;Generate Flashcards with ChatGPT&lt;/strong&gt;:&lt;ul&gt;
 &lt;li&gt;Paste the downloaded subtitles into&amp;nbsp;ChatGPT.&lt;/li&gt;
@@ -56,7 +56,7 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;a class="mybox" href="/images/chatgpt_flashcards.png" title="ChatGPT can create flashcards from notes in CSV format"&gt;&lt;img alt="ChatGPT can create flashcards from notes in CSV format" src="/images/chatgpt_flashcards.png" width="300px"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class="mybox" href="/images/chatgpt_flashcards.png" title="ChatGPT can create flashcards from notes in CSV format"&gt;&lt;img alt="ChatGPT can create flashcards from notes in CSV format" src="/images/chatgpt_flashcards.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;strong&gt;Import into Quizlet&lt;/strong&gt;:&lt;ul&gt;
 &lt;li&gt;Copy the &lt;span class="caps"&gt;CSV&lt;/span&gt;&amp;nbsp;result.&lt;/li&gt;
@@ -65,8 +65,7 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;a class="mybox" href="/images/quizlet_import.png" title="Importing a CSV into Quizlet"&gt;&lt;img alt="Importing a CSV into Quizlet" src="/images/quizlet_import.png" width="300px"&gt;&lt;/a&gt;
-&lt;a class="mybox" href="/images/quizlet_result.png" title="Overview of the flashcards in Quizlet"&gt;&lt;img alt="Overview of the flashcards in Quizlet" src="/images/quizlet_result.png" width="300px"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class="mybox" href="/images/quizlet_import.png" title="Importing a CSV into Quizlet"&gt;&lt;img alt="Importing a CSV into Quizlet" src="/images/quizlet_import.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;strong&gt;Specialization&lt;/strong&gt;:&lt;ul&gt;
 &lt;li&gt;Go through each source cited in the video, and use ChatGPT to simplify any difficult&amp;nbsp;language.&lt;/li&gt;
@@ -76,6 +75,7 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;&lt;a class="mybox" href="/images/quizlet_result.png" title="Overview of the flashcards in Quizlet"&gt;&lt;img alt="Overview of the flashcards in Quizlet" src="/images/quizlet_result.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id="conclusion"&gt;Conclusion&lt;/h3&gt;
 &lt;p&gt;This method is great for remembering facts, but it&amp;#8217;s obviously not enough for deep understanding or critical thinking. To really understand a topic like climate change, you need to read the sources, check the information, read books and think about it critically, question what you learn and discuss it with knowledgeable people to highlight any blindspot you may&amp;nbsp;have!&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>Sign in with Google using Ionic and Django</title><link href="/google-signin-ionic-angular-django.html" rel="alternate"></link><published>2023-08-27T00:00:00+02:00</published><updated>2023-08-27T00:00:00+02:00</updated><author><name>volodya</name></author><id>tag:None,2023-08-27:/google-signin-ionic-angular-django.html</id><summary type="html">&lt;p&gt;Challenges and solutions implementing a simple Google SignIn in Android&amp;nbsp;apps.&lt;/p&gt;</summary><content type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#introduction"&gt;Introduction&lt;/a&gt;&lt;/li&gt;
