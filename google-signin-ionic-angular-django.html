@@ -9,8 +9,6 @@
 	<link rel="author" href=""/>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-	<link href="/theme/css/colorbox.css" rel="stylesheet">
-
 	<!-- Twitter Cards and Open Graph -->
 	<meta name="twitter:card" content="summary">
 	<meta name="twitter:creator" content="@volodiyah">
@@ -23,7 +21,7 @@
 	<meta property="og:url" content="/google-signin-ionic-angular-django.html">
 
 	<!-- Stylesheets and Web Fonts -->
-	<link href="/theme/style.min.css?f0d6ece5" rel="stylesheet">
+	<link href="/theme/style.min.css?e03582c2" rel="stylesheet">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
 	<!-- Favicons -->
@@ -373,33 +371,33 @@
 </code></pre></div>
 
 <p>Punch-in the following code in <code>views.py</code>:</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">social_core.exceptions</span> <span class="kn">import</span> <span class="n">AuthTokenError</span>
-<span class="kn">from</span> <span class="nn">google.oauth2</span> <span class="kn">import</span> <span class="n">id_token</span> <span class="k">as</span> <span class="n">google_id_token</span>
-<span class="kn">from</span> <span class="nn">google.auth.transport</span> <span class="kn">import</span> <span class="n">requests</span>
-<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">social_core.exceptions</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">AuthTokenError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.oauth2</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">id_token</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">google_id_token</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.auth.transport</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.conf</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">settings</span>
 
-<span class="k">def</span> <span class="nf">google_login</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-    <span class="n">body_unicode</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
-    <span class="n">body_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">body_unicode</span><span class="p">)</span>
-    <span class="n">id_token</span> <span class="o">=</span> <span class="n">body_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">google_login</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="n">body_unicode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="n">body_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">body_unicode</span><span class="p">)</span>
+<span class="w">    </span><span class="n">id_token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">body_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
 
 
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">idinfo</span> <span class="o">=</span> <span class="n">google_id_token</span><span class="o">.</span><span class="n">verify_oauth2_token</span><span class="p">(</span><span class="n">id_token</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Request</span><span class="p">(),</span> <span class="n">settings</span><span class="o">.</span><span class="n">SOCIAL_AUTH_GOOGLE_OAUTH2_CLIENT_ID</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">idinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email_verified&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">email</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span><span class="s1">&#39;Go away hacker&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="w">    </span><span class="k">try</span><span class="p">:</span>
+<span class="w">        </span><span class="n">idinfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">google_id_token</span><span class="o">.</span><span class="n">verify_oauth2_token</span><span class="p">(</span><span class="n">id_token</span><span class="p">,</span><span class="w"> </span><span class="n">requests</span><span class="o">.</span><span class="n">Request</span><span class="p">(),</span><span class="w"> </span><span class="n">settings</span><span class="o">.</span><span class="n">SOCIAL_AUTH_GOOGLE_OAUTH2_CLIENT_ID</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">idinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email_verified&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">True</span><span class="p">:</span>
+<span class="w">            </span><span class="n">email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+<span class="w">        </span><span class="k">else</span><span class="p">:</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span><span class="s1">&#39;Go away hacker&#39;</span><span class="p">},</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 
-        <span class="c1"># ID token is valid. Get the user&#39;s Google Account ID from the decoded token</span>
-        <span class="n">user_id</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span>
+<span class="w">        </span><span class="c1"># ID token is valid. Get the user&#39;s Google Account ID from the decoded token</span>
+<span class="w">        </span><span class="n">user_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span>
 
-        <span class="c1"># Extract email and handle user in your DB</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;User ID: </span><span class="si">{</span><span class="n">user_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Email: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="c1"># Extract email and handle user in your DB</span>
+<span class="w">        </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;User ID: </span><span class="si">{</span><span class="n">user_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Email: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">except</span> <span class="n">AuthTokenError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid token&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="w">    </span><span class="k">except</span><span class="w"> </span><span class="n">AuthTokenError</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">e</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Invalid token&#39;</span><span class="p">},</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 </code></pre></div>
 
 <p>This code allows you to verify the <code>id_token</code> provided by the client. If the login was successful, you can recover the user&#8217;s email and id from the <code>idinfo</code> variable. If not, <code>AuthTokenError</code> is&nbsp;raised.</p>
@@ -466,40 +464,40 @@ python<span class="w"> </span>manage.py<span class="w"> </span>migrate
 </code></pre></div>
 
 <p>I fixed it&nbsp;with:</p>
-<div class="codehilite"><pre><span></span><code><span class="cp">../bin/python3 -m pip install git+https://github.com/jazzband/djangorestframework-simplejwt.git</span>
+<div class="codehilite"><pre><span></span><code><span class="c">../bin/python3 -m pip install git+https://github.com/jazzband/djangorestframework-simplejwt.git</span>
 </code></pre></div>
 
 <p>Modify <code>settings.py</code>:</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">timedelta</span>
 
-<span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="o">...</span>
-    <span class="s1">&#39;rest_framework_simplejwt.token_blacklist&#39;</span><span class="p">,</span>
+<span class="n">INSTALLED_APPS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="w">    </span><span class="s1">&#39;rest_framework_simplejwt.token_blacklist&#39;</span><span class="p">,</span>
 <span class="p">]</span>
 
-<span class="n">AUTHENTICATION_BACKENDS</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="o">...</span>
-    <span class="s1">&#39;rest_framework_simplejwt.authentication.JWTAuthentication&#39;</span><span class="p">,</span>
+<span class="n">AUTHENTICATION_BACKENDS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="w">    </span><span class="s1">&#39;rest_framework_simplejwt.authentication.JWTAuthentication&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">REST_FRAMEWORK</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="o">...</span>
-    <span class="s1">&#39;DEFAULT_AUTHENTICATION_CLASSES&#39;</span><span class="p">:</span> <span class="p">(</span>
-        <span class="s1">&#39;rest_framework_simplejwt.authentication.JWTAuthentication&#39;</span><span class="p">,</span>
-    <span class="p">),</span>
+<span class="n">REST_FRAMEWORK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="w">    </span><span class="s1">&#39;DEFAULT_AUTHENTICATION_CLASSES&#39;</span><span class="p">:</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="s1">&#39;rest_framework_simplejwt.authentication.JWTAuthentication&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">),</span>
 <span class="p">}</span>
 
-<span class="n">SIMPLE_JWT</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;ACCESS_TOKEN_LIFETIME&#39;</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">60</span><span class="p">),</span>
-    <span class="s1">&#39;ROTATE_REFRESH_TOKENS&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="s1">&#39;ALGORITHM&#39;</span><span class="p">:</span> <span class="s1">&#39;HS256&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;SIGNING_KEY&#39;</span><span class="p">:</span> <span class="n">SECRET_KEY</span><span class="p">,</span>
-    <span class="s1">&#39;VERIFYING_KEY&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="s1">&#39;AUTH_HEADER_TYPES&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;Bearer&#39;</span><span class="p">,),</span>
-    <span class="s1">&#39;USER_ID_FIELD&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;USER_ID_CLAIM&#39;</span><span class="p">:</span> <span class="s1">&#39;user_id&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;AUTH_TOKEN_CLASSES&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;rest_framework_simplejwt.tokens.AccessToken&#39;</span><span class="p">,),</span>
-    <span class="s1">&#39;TOKEN_TYPE_CLAIM&#39;</span><span class="p">:</span> <span class="s1">&#39;token_type&#39;</span><span class="p">,</span>
+<span class="n">SIMPLE_JWT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s1">&#39;ACCESS_TOKEN_LIFETIME&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">60</span><span class="p">),</span>
+<span class="w">    </span><span class="s1">&#39;ROTATE_REFRESH_TOKENS&#39;</span><span class="p">:</span><span class="w"> </span><span class="kc">False</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;ALGORITHM&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;HS256&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;SIGNING_KEY&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">SECRET_KEY</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;VERIFYING_KEY&#39;</span><span class="p">:</span><span class="w"> </span><span class="kc">None</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;AUTH_HEADER_TYPES&#39;</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;Bearer&#39;</span><span class="p">,),</span>
+<span class="w">    </span><span class="s1">&#39;USER_ID_FIELD&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;id&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;USER_ID_CLAIM&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;AUTH_TOKEN_CLASSES&#39;</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;rest_framework_simplejwt.tokens.AccessToken&#39;</span><span class="p">,),</span>
+<span class="w">    </span><span class="s1">&#39;TOKEN_TYPE_CLAIM&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;token_type&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 
@@ -515,40 +513,40 @@ python<span class="w"> </span>manage.py<span class="w"> </span>migrate
 </code></pre></div>
 
 <p>Replace the google_login controller&nbsp;with:</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">rest_framework_simplejwt.tokens</span> <span class="kn">import</span> <span class="n">RefreshToken</span>
-<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">JsonResponse</span>
-<span class="kn">from</span> <span class="nn">google.oauth2</span> <span class="kn">import</span> <span class="n">id_token</span>
-<span class="kn">from</span> <span class="nn">google.auth.transport</span> <span class="kn">import</span> <span class="n">requests</span>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework_simplejwt.tokens</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">RefreshToken</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">JsonResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.oauth2</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">id_token</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.auth.transport</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">requests</span>
 
-<span class="k">def</span> <span class="nf">google_login</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-    <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">idinfo</span> <span class="o">=</span> <span class="n">id_token</span><span class="o">.</span><span class="n">verify_oauth2_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Request</span><span class="p">(),</span> <span class="n">settings</span><span class="o">.</span><span class="n">SOCIAL_AUTH_GOOGLE_OAUTH2_CLIENT_ID</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">idinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email_verified&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">email</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span><span class="s1">&#39;Go away hacker&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">google_login</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+<span class="w">    </span><span class="k">try</span><span class="p">:</span>
+<span class="w">        </span><span class="n">idinfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_token</span><span class="o">.</span><span class="n">verify_oauth2_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span><span class="w"> </span><span class="n">requests</span><span class="o">.</span><span class="n">Request</span><span class="p">(),</span><span class="w"> </span><span class="n">settings</span><span class="o">.</span><span class="n">SOCIAL_AUTH_GOOGLE_OAUTH2_CLIENT_ID</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">idinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email_verified&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">True</span><span class="p">:</span>
+<span class="w">            </span><span class="n">email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+<span class="w">        </span><span class="k">else</span><span class="p">:</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span><span class="s1">&#39;Go away hacker&#39;</span><span class="p">},</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 
-        <span class="c1"># ID token is valid. Get the user&#39;s Google Account ID from the decoded token</span>
-        <span class="n">user_id</span> <span class="o">=</span> <span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span>
+<span class="w">        </span><span class="c1"># ID token is valid. Get the user&#39;s Google Account ID from the decoded token</span>
+<span class="w">        </span><span class="n">user_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idinfo</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span>
 
-        <span class="c1"># Extract email and handle user in your DB</span>
-        <span class="n">user</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">email</span><span class="p">})</span>
+<span class="w">        </span><span class="c1"># Extract email and handle user in your DB</span>
+<span class="w">        </span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="n">created</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">email</span><span class="p">,</span><span class="w"> </span><span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;email&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">email</span><span class="p">})</span>
 
-        <span class="k">if</span> <span class="n">created</span><span class="p">:</span>
-            <span class="n">user</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">make_random_password</span><span class="p">())</span>
-            <span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">created</span><span class="p">:</span>
+<span class="w">            </span><span class="n">user</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">make_random_password</span><span class="p">())</span>
+<span class="w">            </span><span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 
-        <span class="c1"># Generate JWT token using django-rest-framework-simplejwt</span>
-        <span class="n">refresh</span> <span class="o">=</span> <span class="n">RefreshToken</span><span class="o">.</span><span class="n">for_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
-        <span class="n">access_token</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">refresh</span><span class="o">.</span><span class="n">access_token</span><span class="p">)</span>
+<span class="w">        </span><span class="c1"># Generate JWT token using django-rest-framework-simplejwt</span>
+<span class="w">        </span><span class="n">refresh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RefreshToken</span><span class="o">.</span><span class="n">for_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+<span class="w">        </span><span class="n">access_token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">str</span><span class="p">(</span><span class="n">refresh</span><span class="o">.</span><span class="n">access_token</span><span class="p">)</span>
 
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># includes AuthTokenError</span>
-        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid token&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="w">    </span><span class="k">except</span><span class="w"> </span><span class="n">ValueError</span><span class="p">:</span><span class="w">  </span><span class="c1"># includes AuthTokenError</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Invalid token&#39;</span><span class="p">},</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;token&#39;</span><span class="p">:</span> <span class="n">access_token</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">})</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;token&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">access_token</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;username&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;email&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">})</span>
 </code></pre></div>
 
 <div class="codehilite"><pre><span></span><code>python manage.py makemigrations
@@ -620,6 +618,7 @@ Google&#8217;s <span class="caps">ID</span> token contains an <code>email_verifi
 	</div>
 
 	<div id="related-articles">
+		<a href="/lifelong-learning-in-2024.html" id="next-neighbour">&laquo; Mastering Modern Issues: A Guide to In-Depth Learning in 2024</a>
 		<a href="/angr-tips-and-tricks.html" id="prev-neighbour">Getting acquainted with angr &raquo;</a>
 	</div>
 
@@ -632,9 +631,5 @@ Google&#8217;s <span class="caps">ID</span> token contains an <code>email_verifi
 	</div>
 
 
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<!-- Make sure jquery is loaded first, then load colorbox -->
-<script src="/theme/js/jquery.colorbox-min.js"></script>
-<script src="/theme/js/load-colorbox.js"></script>
 </body>
 </html>
