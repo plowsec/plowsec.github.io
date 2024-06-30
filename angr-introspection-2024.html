@@ -494,22 +494,25 @@ total<span class="w"> </span><span class="m">74912</span>
 </code></pre></div>
 
 <p>The entire file&nbsp;is:</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">angr</span>
 <span class="kn">import</span> <span class="nn">pdbparse</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">helpers.log</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">import</span> <span class="nn">pefile</span>
 <span class="kn">from</span> <span class="nn">cppmangle</span> <span class="kn">import</span> <span class="n">demangle</span><span class="p">,</span> <span class="n">cdecl_sym</span>
+
+<span class="kn">from</span> <span class="nn">helpers.log</span> <span class="kn">import</span> <span class="n">logger</span>
+
 
 <span class="k">class</span> <span class="nc">SymbolManager</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class to manage symbols for an angr project.</span>
 
 <span class="sd">    This class handles loading symbols from PDB files, demangling names,</span>
-<span class="sd">    and mapping addresses to symbols.</span>
+<span class="sd">    mapping addresses to symbols, and downloading PDB files if necessary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">:</span> <span class="n">angr</span><span class="o">.</span><span class="n">Project</span><span class="p">):</span>
@@ -520,57 +523,59 @@ total<span class="w"> </span><span class="m">74912</span>
 <span class="sd">            proj (angr.Project): The angr project to analyze.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">:</span> <span class="n">angr</span><span class="o">.</span><span class="n">Project</span> <span class="o">=</span> <span class="n">proj</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span><span class="p">:</span> <span class="n">pdbparse</span><span class="o">.</span><span class="n">PDB</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_symbols</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_global_symbols</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">text_section_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_text_section_offset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pdbparse</span><span class="o">.</span><span class="n">PDB</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_section_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">load_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pdbparse</span><span class="o">.</span><span class="n">PDB</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_symbols</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_global_symbols</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_text_section_offset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">load_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load symbols for the angr project from a PDB file.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            pdbparse.PDB: The parsed PDB file.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            FileNotFoundError: If the PDB file is not found.</span>
+<span class="sd">        If the PDB file doesn&#39;t exist, it attempts to download it.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">binary_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">filename</span>
         <span class="n">pdb_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">binary_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.pdb&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDB file not found: </span><span class="si">{</span><span class="n">pdb_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDB file not found: </span><span class="si">{</span><span class="n">pdb_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">download_pdb</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">pdbparse</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span> <span class="o">=</span> <span class="n">pdbparse</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded PDB file: </span><span class="si">{</span><span class="n">pdb_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to load PDB file&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">load_global_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">load_global_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load global symbols from the PDB.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Dict[int, str]: A dictionary mapping offsets to symbol names.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">globals_symbols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No PDB loaded, cannot load global symbols&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
         <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span><span class="o">.</span><span class="n">streams</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;funcs&#39;</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">sym</span><span class="p">,</span> <span class="n">sym_value</span> <span class="ow">in</span> <span class="n">stream</span><span class="o">.</span><span class="n">funcs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">globals_symbols</span><span class="p">[</span><span class="n">sym_value</span><span class="o">.</span><span class="n">offset</span><span class="p">]</span> <span class="o">=</span> <span class="n">sym_value</span><span class="o">.</span><span class="n">name</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="n">sym_value</span><span class="o">.</span><span class="n">offset</span><span class="p">]</span> <span class="o">=</span> <span class="n">sym_value</span><span class="o">.</span><span class="n">name</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Global symbol: </span><span class="si">{</span><span class="n">sym_value</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">sym_value</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">globals_symbols</span>
 
-    <span class="k">def</span> <span class="nf">get_text_section_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_text_section_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the offset of the .text section from the image base.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            int: The offset of the .text section, or 0 if not found.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">main_object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">main_object</span>
         <span class="k">for</span> <span class="n">section_name</span><span class="p">,</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">main_object</span><span class="o">.</span><span class="n">sections_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">section_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.text&#39;</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">section</span><span class="o">.</span><span class="n">vaddr</span> <span class="o">-</span> <span class="n">main_object</span><span class="o">.</span><span class="n">mapped_base</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">text_section_offset</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">vaddr</span> <span class="o">-</span> <span class="n">main_object</span><span class="o">.</span><span class="n">mapped_base</span>
+                <span class="k">return</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not find .text section. Using 0 as offset.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_section_offset</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">demangle_name</span><span class="p">(</span><span class="n">mangled_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -614,7 +619,7 @@ total<span class="w"> </span><span class="m">74912</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Symbol not found for address </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">address</span><span class="p">)</span><span class="si">}</span><span class="s2"> (RVA: </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">rva</span><span class="p">)</span><span class="si">}</span><span class="s2">, Adjusted RVA: </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">adjusted_rva</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">update_kb_with_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_kb_with_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the knowledge base with symbols.</span>
 
@@ -627,10 +632,63 @@ total<span class="w"> </span><span class="m">74912</span>
                 <span class="n">demangled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">demangle_name</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
                 <span class="n">func</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">demangled</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Function </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">addr</span><span class="p">)</span><span class="si">}</span><span class="s2"> updated with symbol: </span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">download_pdb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">download_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download the PDB file for the current binary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            download_dir (str): Directory to save the downloaded PDB.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pdbname</span><span class="p">,</span> <span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pe_debug_infos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">download_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://msdl.microsoft.com/download/symbols/</span><span class="si">{</span><span class="n">pdbname</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">signature</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">pdbname</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading PDB from: </span><span class="si">{</span><span class="n">download_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">head</span><span class="p">(</span>
+            <span class="n">download_url</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Microsoft-Symbol-Server/10.0.10036.206&quot;</span><span class="p">},</span>
+            <span class="n">allow_redirects</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="n">target_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">pdbname</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Microsoft-Symbol-Server/10.0.10036.206&quot;</span><span class="p">},</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdb</span><span class="p">:</span>
+                <span class="n">pdb</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">pdb</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDB downloaded to: </span><span class="si">{</span><span class="n">target_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(HTTP </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">) Could not find PDB at </span><span class="si">{</span><span class="n">download_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_pe_debug_infos</span><span class="p">(</span><span class="n">pathtopefile</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract PDB name and signature from a PE file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pathtopefile (str): Path to the PE file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[str, str]: A tuple containing the PDB name and signature.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">pefile</span><span class="o">.</span><span class="n">PE</span><span class="p">(</span><span class="n">pathtopefile</span><span class="p">,</span> <span class="n">fast_load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">pedata</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">OPTIONAL_HEADER</span><span class="o">.</span><span class="n">DATA_DIRECTORY</span><span class="p">}</span>
+        <span class="n">raw_debug_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">parse_debug_directory</span><span class="p">(</span><span class="n">pedata</span><span class="p">[</span><span class="s2">&quot;IMAGE_DIRECTORY_ENTRY_DEBUG&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">VirtualAddress</span><span class="p">,</span> <span class="n">pedata</span><span class="p">[</span><span class="s2">&quot;IMAGE_DIRECTORY_ENTRY_DEBUG&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">Size</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">entry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">raw_debug_data</span> <span class="o">=</span> <span class="n">raw_debug_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">entry</span>
+
+        <span class="n">pdbname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">raw_debug_data</span><span class="o">.</span><span class="n">PdbFileName</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">signature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">DIRECTORY_ENTRY_DEBUG</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">entry</span><span class="o">.</span><span class="n">Signature_String</span>
+
+        <span class="c1"># If an absolute path is embedded the server uses just the filename</span>
+        <span class="n">pdbname</span> <span class="o">=</span> <span class="n">pdbname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">pdbname</span><span class="p">,</span> <span class="n">signature</span>
 </code></pre></div>
 
 <p>And can be used like&nbsp;this:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">symbol_manager</span> <span class="o">=</span> <span class="n">symbols</span><span class="o">.</span><span class="n">SymbolManager</span><span class="p">(</span><span class="n">proj</span><span class="p">)</span> <span class="c1"># angr.Project</span>
+<span class="n">symbol_manager</span><span class="o">.</span><span class="n">download_pdb</span><span class="p">()</span>
 <span class="n">symbol_manager</span><span class="o">.</span><span class="n">update_kb_with_symbols</span><span class="p">()</span>
 </code></pre></div>
 
