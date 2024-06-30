@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Using angr in 2024 | volodya</title>
+	<meta name="description" content="My experiences using angr for real-world use cases in 2024">
+	<meta name="author" content="plowsec">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="@volodiyah">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="@volodiyah">
+	<meta property="og:title" content="Using angr in 2024">
+	<meta property="og:description" content="My experiences using angr for real-world use cases in 2024">
+	<meta property="og:image" content="/images/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/angr-2024.html">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css?e03582c2" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FF8000">
+	<meta name="google-site-verification" content="9iiuP1IGbCXy85riRmrFC_68Vh3CldZM2tvAfxyuXT0" />
+	<meta name="msapplication-TileColor" content="#FF8000">
+	<meta name="msapplication-TileImage" content="/images/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/images/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/images/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/images/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/images/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/images/icons/avatar.png"></a>
+			<div id="name"><a href="/">volodya</a></div>
+			<div id="bio">Security Engineer interested in Program Analysis, (de)obfuscation and antivirus engines. Stripped binaries || GTFO.</div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>
+			</div>
+
+			<div id="social">
+				<a href="mailto:united.marshmallow(at)gmail.com" title="Email (united.marshmallow(at)gmail.com)" class="icon fa fa-envelope"></a>
+				<a href="https://twitter.com/volodiyah" title="Twitter" class="icon fa fa-twitter"></a>
+				<a href="https://github.com/plowsec" title="GitHub" class="icon fa fa-github"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/angr-2024.html" title="Permalink to Using angr in 2024">Using angr in&nbsp;2024</a></h1>
+	<time class="date" datetime="2024-06-29 00:00:00+02:00">Sat 29 June 2024</time>
+	<div class="content">
+		<div class="toc"><span class="toctitle">Table of contents:</span><ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#installing-angr-on-macos-apple-silicon-in-2024">Installing angr on macOS Apple Silicon in&nbsp;2024</a></li>
+<li><a href="#to-be-continued">To be&nbsp;continued</a></li>
+</ul>
+</div>
+<h1 id="introduction">Introduction</h1>
+<p>My first article on this personal blog was about <code>angr</code>, and was supposed to be part of a series. As evident from the lack of additional articles, I in fact gave up, for the reasons&nbsp;below:</p>
+<ul>
+<li>No good enough hardware to handle the resources required by <code>angr</code></li>
+<li>Unfamiliarity with the framework and unwillingness to jump into its (rather large)&nbsp;codebase</li>
+<li><code>angr</code> runs for a long time and consumes all my resources, and I don&#8217;t (didn&#8217;t) know&nbsp;why.</li>
+<li>Few people around me shared my interest for&nbsp;it.</li>
+<li>Other priorities in my personal&nbsp;life</li>
+</ul>
+<p>But now, things have changed and I feel I&#8217;m ready to take another stab at it! In fact, I&#8217;ve spent the last few weeks experimenting with&nbsp;it:</p>
+<ul>
+<li>I needed to track which byte in a file ended up being used at specific locations in a software. So naturally I didn&#8217;t properly scout the existing tools and made one built on top of <em>pyvex</em>, <code>angr</code><span class="quo">&#8216;</span>s python port of <code>Valgrind</code><span class="quo">&#8216;</span> Intermediate Representation. This was before I knew about <code>polytracker</code> and also before I realized I didn&#8217;t really needed that. Too bad, I wrote 2,000 lines of code for that&nbsp;haha.</li>
+<li>Discussing with a colleague, we shared our need for an <span class="caps">IDA</span> extension where we could <code>right click</code> and ask <code>angr</code> to find bugs for us. So I made this extension (at least, the <code>angr</code> integration&nbsp;part).</li>
+<li>This time, I decided to stop reinventing the wheel and properly investigate the state-of-the-art (<span class="caps">SOTA</span>) approaches. While I initially relied on Google searches, the most fruitful method turned out to be exploring GitHub repositories. Specifically, I searched for projects with specific keywords (using the code search feature). The idea is that specific <code>angr</code> classes would necessarily be used in projects that solved the same problems I intended to solve (<code>angr.analyses.VariableRecovery</code>) for&nbsp;instance.</li>
+</ul>
+<p>I found&nbsp;these:</p>
+<ul>
+<li><a href="https://github.com/zeze-zeze/ioctlance">ioctlance</a></li>
+<li><a href="https://github.com/carter-yagemann/ARCUS/tree/master">Arcus</a></li>
+<li><a href="https://github.com/CyFI-Lab-Public/C3PO"><span class="caps">C3PO</span></a></li>
+<li><a href="https://github.com/csvl/SEMA/"><span class="caps">SEMA</span> toolchain</a> (malware analysis with <code>angr</code>)</li>
+</ul>
+<p>I read their papers and source code. I found this file (<code>disabled/int_overflow.py</code>) in Arcus that piqued my interest: could I copy-paste a ready to use integer overflow&nbsp;sanitizer?</p>
+<p>So I made a basic vulnerable program in C, built it, created a basic <code>angr</code> skeleton, and plugged in <code>int_overflow.py</code>. It didn&#8217;t&nbsp;work.</p>
+<p>My motivation didn&#8217;t waver for mysterious reasons; in fact, I felt even more driven to debug it. What do I do whenever I&#8217;m pushed towards solving something I seriously lack skills for? I minify it and add back some features, first copy-pasting from the examples, and repeatedly doing this until my understanding levels&nbsp;up.</p>
+<p>This usually snowballs quite rapidly because, by doing this, I get ideas, I test them, this constrains the horizon of possibilities further, and then solutions become more obvious. I implement them until I become rather fluent with&nbsp;it.</p>
+<blockquote>
+<p>Tout voyage tend vers une fin, mais à la fin, c&#8217;est le voyage qui compte.
+- Antoine de&nbsp;Saint-Exupéry</p>
+</blockquote>
+<p>I&#8217;m glad to say this happened with <code>angr</code> (although I will probably never fully master it; <code>angr</code> is huge, and my love for Program Analysis stops at math-heavy&nbsp;papers).</p>
+<p>This also means&#8230; I&#8217;m sharing my discoveries in this article in the hope of helping or inspiring&nbsp;others.</p>
+<h1 id="installing-angr-on-macos-apple-silicon-in-2024">Installing <code>angr</code> on macOS Apple Silicon in&nbsp;2024</h1>
+<p>To be honest, I had a terrible experience installing it in 2020, and hoped it would be different. It was&nbsp;not. </p>
+<p>Here are my notes to successfully install&nbsp;it:</p>
+<ul>
+<li>Download <code>cmake</code> from the official website and install,&nbsp;then</li>
+</ul>
+<div class="codehilite"><pre><span></span><code>sudo &quot;/Applications/CMake.app/Contents/bin/cmake-gui&quot; --install=/usr/local/bin
+brew install pkg-config 
+</code></pre></div>
+
+<ul>
+<li>Create a virtual environment if you&nbsp;want</li>
+<li><code>pip install angr</code></li>
+</ul>
+<p>This <em>should</em> work. If not, good luck, if yes, then you&#8217;re ready for the really painful part. By default, the <code>capstone</code> dependency ships with the wrong architecture. So we&#8217;ll need to build it ourselves, and also fix bugs, because why would it be&nbsp;otherwise.</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">3130</span><span class="w">  </span><span class="n">git</span><span class="w"> </span><span class="n">clone</span><span class="w"> </span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="mf">.</span><span class="n">com</span><span class="o">/</span><span class="n">capstone</span><span class="o">-</span><span class="n">engine</span><span class="o">/</span><span class="n">capstone</span>
+<span class="mf">3131</span><span class="w">  </span><span class="n">l</span>
+<span class="mf">3132</span><span class="w">  </span><span class="n">cd</span><span class="w"> </span><span class="n">capstone</span>
+<span class="mf">3133</span><span class="w">  </span><span class="n">l</span>
+<span class="mf">3134</span><span class="w">  </span><span class="n">make</span>
+<span class="mf">3135</span><span class="w">  </span><span class="n">brew</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">llvm</span>
+<span class="mf">3136</span><span class="w">  </span><span class="nb">exp</span><span class="ow">or</span><span class="n">t</span><span class="w"> </span><span class="n">LDFLAGS</span><span class="o">=</span><span class="s">&quot;-L/opt/homebrew/opt/llvm/lib&quot;</span><span class="err">\</span><span class="n">n</span>
+
+<span class="mf">3139</span><span class="w">  </span><span class="n">make</span>
+<span class="mf">3140</span><span class="w">  </span><span class="n">cd</span><span class="w"> </span><span class="n">bindings</span>
+<span class="mf">3143</span><span class="w">  </span><span class="n">cd</span><span class="w"> </span><span class="n">python</span>
+<span class="mf">3144</span><span class="w">  </span><span class="n">sudo</span><span class="w"> </span><span class="n">make</span><span class="w"> </span><span class="n">install</span>
+<span class="mf">3148</span><span class="w">  </span><span class="n">python3</span><span class="w"> </span><span class="n">setup</span><span class="mf">.</span><span class="n">py</span><span class="w"> </span><span class="n">install</span>
+<span class="mf">3149</span><span class="w">  </span><span class="n">pip</span><span class="w"> </span><span class="n">uninstall</span><span class="w"> </span><span class="n">capstone</span>
+</code></pre></div>
+
+<p>Above is the sequence of commands I had to execute. In short, we&#8217;re cloning <code>capstone</code>, installing <code>llvm</code> (used to build <code>capstone</code>), configuring the linker because otherwise <code>capstone</code> complains about it, then build the <code>python</code> bindings, and then apparently uninstalling <code>capstone</code> (installed as dependency while installing <code>angr</code>) is enough for our freshly built version to be&nbsp;found.</p>
+<p>Buuuut this is not over. By doing this, we installed a too recent version of <code>capstone</code>. Of course, they made breaking changes: they replaced <code>CS_ARCH_ARM64</code> with <code>CS_ARCH_AARCH64</code> if you&nbsp;care. </p>
+<div class="codehilite"><pre><span></span><code><span class="n">error</span><span class="o">:</span><span class="w"> </span><span class="n">module</span><span class="w"> </span><span class="s1">&#39;capstone&#39;</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">attribute</span><span class="w"> </span><span class="s2">&quot;&#39;CS_ARCH_ARM64&#39;&quot;</span>
+</code></pre></div>
+
+<p>Just open <code>.venv/lib/python3.9/site-packages/archinfo/arch_aarch64.py</code> and fix it at line&nbsp;47:</p>
+<div class="codehilite"><pre><span></span><code>    if _capstone:
+        cs_arch = _capstone.CS_ARCH_ARM64
+</code></pre></div>
+
+<p>And&nbsp;now:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">python3</span>
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="nn">angr</span>
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span>
+</code></pre></div>
+
+<p>It&nbsp;works!</p>
+<h1 id="to-be-continued">To be&nbsp;continued</h1>
+<p>In the next article, I&#8217;m sharing tips and tricks to make <code>angr</code> faster and actually understand what it&#8217;s doing. I will be sharing code snippets that actually helped me find a bug in <code>angr</code><span class="quo">&#8216;</span>s exploration (or undocument shortcoming if you want to call it like&nbsp;that).</p>
+	</div>
+
+	<div id="related-articles">
+		<a href="/angr-introspection-2024.html" id="next-neighbour">&laquo; angr for real-world use cases</a>
+		<a href="/curiosity-killed-the-cat.html" id="prev-neighbour">Curiosity Killed The Cat, Says The Sloth &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com">Pelican</a> (<a href="https://github.com/iKevinY/pneumatic">Pneumatic Theme</a>) and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>
