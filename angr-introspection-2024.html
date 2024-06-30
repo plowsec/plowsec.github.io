@@ -81,7 +81,7 @@
 <li><a href="#coverage-basic-attempt">Coverage: basic&nbsp;attempt</a></li>
 <li><a href="#callstack">Callstack</a></li>
 <li><a href="#windows-debugging-symbols">Windows Debugging&nbsp;Symbols</a></li>
-<li><a href="#handle-errored-states">Handle errored&nbsp;states:</a></li>
+<li><a href="#handle-errored-states">Handle errored&nbsp;states</a></li>
 <li><a href="#real-time-code-coverage-with-trends">Real-time code coverage with&nbsp;trends</a></li>
 </ul>
 </li>
@@ -663,7 +663,7 @@ total<span class="w"> </span><span class="m">74912</span>
 -&gt;<span class="w"> </span>0x1400010f0<span class="w"> </span>:<span class="w"> </span>do_heap_op<span class="w"> </span><span class="o">(</span>long<span class="w"> </span>long<span class="w"> </span><span class="o">(</span><span class="m">64</span><span class="w"> </span>bits<span class="o">)</span>,<span class="w"> </span>long<span class="w"> </span>long<span class="w"> </span><span class="o">(</span><span class="m">64</span><span class="w"> </span>bits<span class="o">))</span><span class="w"> </span>-&gt;<span class="w"> </span>void<span class="w"> </span><span class="o">(</span><span class="m">0</span><span class="w"> </span>xrefs<span class="o">)</span><span class="w"> </span><span class="o">(</span>repeated<span class="w"> </span><span class="m">97</span><span class="w"> </span><span class="nb">times</span><span class="o">)</span>
 </code></pre></div>
 
-<h2 id="handle-errored-states">Handle errored&nbsp;states:</h2>
+<h2 id="handle-errored-states">Handle errored&nbsp;states</h2>
 <p>I made this simple helper function to print a Python&nbsp;backtrace:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">show_errors</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">angr</span><span class="o">.</span><span class="n">SimState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>

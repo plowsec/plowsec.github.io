@@ -13,7 +13,7 @@
 &lt;li&gt;&lt;a href="#coverage-basic-attempt"&gt;Coverage: basic&amp;nbsp;attempt&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#callstack"&gt;Callstack&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#windows-debugging-symbols"&gt;Windows Debugging&amp;nbsp;Symbols&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#handle-errored-states"&gt;Handle errored&amp;nbsp;states:&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#handle-errored-states"&gt;Handle errored&amp;nbsp;states&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#real-time-code-coverage-with-trends"&gt;Real-time code coverage with&amp;nbsp;trends&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
@@ -595,7 +595,7 @@ total&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;74912&lt;/span&gt
 -&amp;gt;&lt;span class="w"&gt; &lt;/span&gt;0x1400010f0&lt;span class="w"&gt; &lt;/span&gt;:&lt;span class="w"&gt; &lt;/span&gt;do_heap_op&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;long&lt;span class="w"&gt; &lt;/span&gt;long&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;64&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;bits&lt;span class="o"&gt;)&lt;/span&gt;,&lt;span class="w"&gt; &lt;/span&gt;long&lt;span class="w"&gt; &lt;/span&gt;long&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;64&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;bits&lt;span class="o"&gt;))&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;-&amp;gt;&lt;span class="w"&gt; &lt;/span&gt;void&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;xrefs&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;repeated&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;97&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nb"&gt;times&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="handle-errored-states"&gt;Handle errored&amp;nbsp;states:&lt;/h2&gt;
+&lt;h2 id="handle-errored-states"&gt;Handle errored&amp;nbsp;states&lt;/h2&gt;
 &lt;p&gt;I made this simple helper function to print a Python&amp;nbsp;backtrace:&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;show_errors&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;angr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SimState&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
 &lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
