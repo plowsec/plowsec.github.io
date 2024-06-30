@@ -72,7 +72,11 @@
 &lt;p&gt;That&amp;#8217;s not a bug, that&amp;#8217;s the best angr can do. What do you expect the result of loading from an unconstrained pointer to be? We have to concretize it in order to be able to continue execution.&amp;nbsp;rhelmot&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;The rhetoric question from &lt;code&gt;rhelmot&lt;/code&gt; sounds smart indeed but newbs like me didn&amp;#8217;t even think about it before running into the&amp;nbsp;problem.&lt;/p&gt;
-&lt;p&gt;So the fix was simple, I used the &lt;code&gt;strcpy&lt;/code&gt; &lt;code&gt;SimProcedure&lt;/code&gt; already available in &lt;code&gt;angr&lt;/code&gt; and then it all went very&amp;nbsp;well.&lt;/p&gt;
+&lt;p&gt;So the fix was simple, I used the &lt;code&gt;strcpy&lt;/code&gt; &lt;code&gt;SimProcedure&lt;/code&gt; already available in &lt;code&gt;angr&lt;/code&gt; and then it all went very well. I&amp;#8217;m telling this anectote for 2&amp;nbsp;reasons:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Persistence is&amp;nbsp;key&lt;/li&gt;
+&lt;li&gt;Use it to show case my worflow when leveraing &amp;#8220;blackbox&amp;#8221;&amp;nbsp;tools.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h1 id="angr-for-real-world-use-cases"&gt;angr for real-world use&amp;nbsp;cases&lt;/h1&gt;
 &lt;p&gt;At this point, I was convinced &lt;code&gt;angr&lt;/code&gt;&lt;span class="quo"&gt;&amp;#8216;&lt;/span&gt;s problems were fixable with effort and a methodological approach. Duh&amp;#8230;but research has a psychological factor and you must believe in yourself to sink even more time and effort when nothing has payed off so far. And now I have that in my mind. What&amp;#8217;s&amp;nbsp;next?&lt;/p&gt;
 &lt;ul&gt;
@@ -82,7 +86,7 @@
 &lt;/ul&gt;
 &lt;p&gt;Let&amp;#8217;s tackle the 3rd problem&amp;nbsp;first.&lt;/p&gt;
 &lt;h1 id="use-pycharm"&gt;Use&amp;nbsp;Pycharm&lt;/h1&gt;
-&lt;p&gt;Modern &lt;span class="caps"&gt;IDE&lt;/span&gt; are a must. Honestly I don&amp;#8217;t understand those working on big projects with Vim. It&amp;#8217;s lack coding with your hands tied behind your back. With &lt;code&gt;angr&lt;/code&gt;, the documentation does not cover enough information if you&amp;#8217;re looking for a specific use case, so you have two (non-exclusive)&amp;nbsp;options:&lt;/p&gt;
+&lt;p&gt;Modern IDEs are a must. Honestly I don&amp;#8217;t understand those working on big projects with Vim. It&amp;#8217;s lack coding with your hands tied behind your back. With &lt;code&gt;angr&lt;/code&gt;, the documentation does not cover enough information if you&amp;#8217;re looking for a specific use case, so you have two (non-exclusive)&amp;nbsp;options:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Reading the source&amp;nbsp;code&lt;/li&gt;
 &lt;li&gt;Playing with the object attributes and see what they&amp;nbsp;contain.&lt;/li&gt;
@@ -153,6 +157,7 @@ Pickle will work. However, Python will default to using an extremely old pickle 
 &lt;span class="n"&gt;simgr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;explore&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mh"&gt;0x00001407&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;step_func&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;get_small_coverage&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
+&lt;p&gt;Here, I used ChatGPT as an &lt;span class="caps"&gt;OCR&lt;/span&gt; tool to transcribe the slide shown in the YouTube Video (I know ChatGPT uses &lt;a href="https://pypi.org/project/pytesseract/"&gt;pytesseract&lt;/a&gt; behind the scenes, but the output is a lot&amp;nbsp;better).&lt;/p&gt;
 &lt;p&gt;Running this &lt;a href="https://docs.angr.io/en/latest/advanced-topics/pipeline.html#step"&gt;step_func&lt;/a&gt; creates a bunch of files in the local folder as &lt;code&gt;angr&lt;/code&gt; progresses towards the goal given to&amp;nbsp;it:&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;$&lt;span class="w"&gt; &lt;/span&gt;ls&lt;span class="w"&gt; &lt;/span&gt;-lsaht&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;head
 total&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;74912&lt;/span&gt;
@@ -927,7 +932,7 @@ INFO&lt;span class="w"&gt;     &lt;/span&gt;core.coverage:coverage.py:90&lt;span
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;h1 id="conclusion"&gt;Conclusion&lt;/h1&gt;
-&lt;p&gt;Thanks to these new tools in your toolbox, I hope you&amp;#8217;ll get a better user experience with &lt;code&gt;angr&lt;/code&gt; and give it a (again) chance. It really is an awesome&amp;nbsp;framework.&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>Using angr in 2024</title><link href="/angr-2024.html" rel="alternate"></link><published>2024-06-29T00:00:00+02:00</published><updated>2024-06-29T00:00:00+02:00</updated><author><name>volodya</name></author><id>tag:None,2024-06-29:/angr-2024.html</id><summary type="html">&lt;p&gt;My experiences using &lt;code&gt;angr&lt;/code&gt; for real-world use cases in&amp;nbsp;2024&lt;/p&gt;</summary><content type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
+&lt;p&gt;Thanks to these new tools in your toolbox, I hope you&amp;#8217;ll get a better user experience with &lt;code&gt;angr&lt;/code&gt; and (again) give it a chance. It really is an awesome&amp;nbsp;framework!&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>Using angr in 2024</title><link href="/angr-2024.html" rel="alternate"></link><published>2024-06-29T00:00:00+02:00</published><updated>2024-06-29T00:00:00+02:00</updated><author><name>volodya</name></author><id>tag:None,2024-06-29:/angr-2024.html</id><summary type="html">&lt;p&gt;My experiences using &lt;code&gt;angr&lt;/code&gt; for real-world use cases in&amp;nbsp;2024&lt;/p&gt;</summary><content type="html">&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Table of contents:&lt;/span&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#introduction"&gt;Introduction&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#installing-angr-on-macos-apple-silicon-in-2024"&gt;Installing angr on macOS Apple Silicon in&amp;nbsp;2024&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#to-be-continued"&gt;To be&amp;nbsp;continued&lt;/a&gt;&lt;/li&gt;
@@ -1152,7 +1157,7 @@ This civilization possesses the terrifying ability to accelerate their&amp;nbsp;
 &lt;h2 id="mastering-modern-issues-a-guide-to-in-depth-learning-in-2024"&gt;Mastering Modern Issues: A Guide to In-Depth Learning in&amp;nbsp;2024&lt;/h2&gt;
 &lt;h3 id="leveraging-current-tools"&gt;Leveraging current&amp;nbsp;tools&lt;/h3&gt;
 &lt;p&gt;The tools we have in 2024 make it easier than ever to keep learning. It is now straightforward to feed notes to expert systems and output flashcards in custom format, or expand on difficult concepts or help with&amp;nbsp;memorization.&lt;/p&gt;
-&lt;p&gt;While you&amp;#8217;re not likely to learn anything novel in this article, I still felt it could be of some value to share my workflow using &lt;span class="caps"&gt;LLM&lt;/span&gt; after I read &lt;a href="https://reutersinstitute.politics.ox.ac.uk/what-does-public-six-countries-think-generative-ai-news"&gt;this article&lt;/a&gt; claiming most people did not use &lt;span class="caps"&gt;LLM&lt;/span&gt; at&amp;nbsp;all.&lt;/p&gt;
+&lt;p&gt;While you&amp;#8217;re not likely to learn anything novel in this article, I still felt it could be of some value to share my workflow using &lt;span class="caps"&gt;LLM&lt;/span&gt; after I read &lt;a href="https://reutersinstitute.politics.ox.ac.uk/what-does-public-six-countries-think-generative-ai-news"&gt;this article&lt;/a&gt; claiming most people did not use LLMs at&amp;nbsp;all.&lt;/p&gt;
 &lt;p&gt;Of course LLMs have gigantic&amp;nbsp;shortcomings:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Hallucinations.&lt;/li&gt;

@@ -21,7 +21,7 @@
 	<meta property="og:url" content="/angr-introspection-2024.html">
 
 	<!-- Stylesheets and Web Fonts -->
-	<link href="/theme/style.min.css?e03582c2" rel="stylesheet">
+	<link href="/theme/style.min.css?d673191b" rel="stylesheet">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
 	<!-- Favicons -->
@@ -140,7 +140,11 @@
 <p>That&#8217;s not a bug, that&#8217;s the best angr can do. What do you expect the result of loading from an unconstrained pointer to be? We have to concretize it in order to be able to continue execution.&nbsp;rhelmot</p>
 </blockquote>
 <p>The rhetoric question from <code>rhelmot</code> sounds smart indeed but newbs like me didn&#8217;t even think about it before running into the&nbsp;problem.</p>
-<p>So the fix was simple, I used the <code>strcpy</code> <code>SimProcedure</code> already available in <code>angr</code> and then it all went very&nbsp;well.</p>
+<p>So the fix was simple, I used the <code>strcpy</code> <code>SimProcedure</code> already available in <code>angr</code> and then it all went very well. I&#8217;m telling this anectote for 2&nbsp;reasons:</p>
+<ul>
+<li>Persistence is&nbsp;key</li>
+<li>Use it to show case my worflow when leveraing &#8220;blackbox&#8221;&nbsp;tools.</li>
+</ul>
 <h1 id="angr-for-real-world-use-cases">angr for real-world use&nbsp;cases</h1>
 <p>At this point, I was convinced <code>angr</code><span class="quo">&#8216;</span>s problems were fixable with effort and a methodological approach. Duh&#8230;but research has a psychological factor and you must believe in yourself to sink even more time and effort when nothing has payed off so far. And now I have that in my mind. What&#8217;s&nbsp;next?</p>
 <ul>
@@ -150,7 +154,7 @@
 </ul>
 <p>Let&#8217;s tackle the 3rd problem&nbsp;first.</p>
 <h1 id="use-pycharm">Use&nbsp;Pycharm</h1>
-<p>Modern <span class="caps">IDE</span> are a must. Honestly I don&#8217;t understand those working on big projects with Vim. It&#8217;s lack coding with your hands tied behind your back. With <code>angr</code>, the documentation does not cover enough information if you&#8217;re looking for a specific use case, so you have two (non-exclusive)&nbsp;options:</p>
+<p>Modern IDEs are a must. Honestly I don&#8217;t understand those working on big projects with Vim. It&#8217;s lack coding with your hands tied behind your back. With <code>angr</code>, the documentation does not cover enough information if you&#8217;re looking for a specific use case, so you have two (non-exclusive)&nbsp;options:</p>
 <ol>
 <li>Reading the source&nbsp;code</li>
 <li>Playing with the object attributes and see what they&nbsp;contain.</li>
@@ -221,6 +225,7 @@ Pickle will work. However, Python will default to using an extremely old pickle 
 <span class="n">simgr</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">find</span><span class="o">=</span><span class="mh">0x00001407</span><span class="p">,</span> <span class="n">step_func</span><span class="o">=</span><span class="n">get_small_coverage</span><span class="p">)</span>
 </code></pre></div>
 
+<p>Here, I used ChatGPT as an <span class="caps">OCR</span> tool to transcribe the slide shown in the YouTube Video (I know ChatGPT uses <a href="https://pypi.org/project/pytesseract/">pytesseract</a> behind the scenes, but the output is a lot&nbsp;better).</p>
 <p>Running this <a href="https://docs.angr.io/en/latest/advanced-topics/pipeline.html#step">step_func</a> creates a bunch of files in the local folder as <code>angr</code> progresses towards the goal given to&nbsp;it:</p>
 <div class="codehilite"><pre><span></span><code>$<span class="w"> </span>ls<span class="w"> </span>-lsaht<span class="w"> </span><span class="p">|</span><span class="w"> </span>head
 total<span class="w"> </span><span class="m">74912</span>
@@ -995,7 +1000,7 @@ INFO<span class="w">     </span>core.coverage:coverage.py:90<span class="w"> </s
 </code></pre></div>
 
 <h1 id="conclusion">Conclusion</h1>
-<p>Thanks to these new tools in your toolbox, I hope you&#8217;ll get a better user experience with <code>angr</code> and give it a (again) chance. It really is an awesome&nbsp;framework.</p>
+<p>Thanks to these new tools in your toolbox, I hope you&#8217;ll get a better user experience with <code>angr</code> and (again) give it a chance. It really is an awesome&nbsp;framework!</p>
 	</div>
 
 	<div id="related-articles">

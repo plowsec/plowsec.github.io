@@ -105,7 +105,8 @@ hr {
 
 a {
 	color: #333;
-	text-decoration: none;
+	text-decoration: underline;
+	text-decoration-style: dotted;
 	font-weight: bold;
 	outline: 0;
 
@@ -128,6 +129,10 @@ a {
 			}
 		}
 	}
+}
+
+h1 a{
+	text-decoration: none;
 }
 
 ul, ol {
