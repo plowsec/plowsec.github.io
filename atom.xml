@@ -75,7 +75,7 @@
 &lt;p&gt;So the fix was simple, I used the &lt;code&gt;strcpy&lt;/code&gt; &lt;code&gt;SimProcedure&lt;/code&gt; already available in &lt;code&gt;angr&lt;/code&gt; and then it all went very well. I&amp;#8217;m telling this anectote for 2&amp;nbsp;reasons:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Persistence is&amp;nbsp;key&lt;/li&gt;
-&lt;li&gt;Use it to show case my worflow when leveraing &amp;#8220;blackbox&amp;#8221;&amp;nbsp;tools.&lt;/li&gt;
+&lt;li&gt;Useful to show case my worflow when leveraging &amp;#8220;blackbox&amp;#8221;&amp;nbsp;tools.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h1 id="angr-for-real-world-use-cases"&gt;angr for real-world use&amp;nbsp;cases&lt;/h1&gt;
 &lt;p&gt;At this point, I was convinced &lt;code&gt;angr&lt;/code&gt;&lt;span class="quo"&gt;&amp;#8216;&lt;/span&gt;s problems were fixable with effort and a methodological approach. Duh&amp;#8230;but research has a psychological factor and you must believe in yourself to sink even more time and effort when nothing has payed off so far. And now I have that in my mind. What&amp;#8217;s&amp;nbsp;next?&lt;/p&gt;
