@@ -80,7 +80,12 @@
 <li><a href="#introspection">Introspection</a><ul>
 <li><a href="#coverage-basic-attempt">Coverage: basic&nbsp;attempt</a></li>
 <li><a href="#callstack">Callstack</a></li>
-<li><a href="#windows-debugging-symbols">Windows Debugging&nbsp;Symbols</a></li>
+<li><a href="#windows-debugging-symbols">Windows Debugging Symbols</a><ul>
+<li><a href="#downloading-symbols">Downloading&nbsp;symbols</a></li>
+<li><a href="#demangling">Demangling</a></li>
+<li><a href="#updating-angrs-knowledge-base">Updating angr&#8217;s knowledge&nbsp;base</a></li>
+</ul>
+</li>
 <li><a href="#handle-errored-states">Handle errored&nbsp;states</a></li>
 <li><a href="#real-time-code-coverage-with-trends">Real-time code coverage with&nbsp;trends</a></li>
 </ul>
@@ -192,9 +197,9 @@ Pickle will work. However, Python will default to using an extremely old pickle 
 <li><code>angr.analyses.CFGEmulated</code></li>
 <li>The Simulation Manager after a succesful but time consuming <code>.explore</code> call!</li>
 </ol>
-<p>By doing this, you can resume your <code>angr</code> script and thus iterate rapidly on the trial-error process that, in my opinion, primordial to both learn and build something&nbsp;new.</p>
+<p>By doing this, you can resume your <code>angr</code> script and thus iterate rapidly on the trial-error process that, in my opinion, is primordial to both learn and build something&nbsp;new.</p>
 <h1 id="introspection">Introspection</h1>
-<p>Let&#8217;s get to the core of this article. With any long-running job, we, developers, require confidence that the executed program is working and not wasting <span class="caps">CPU</span> cycles because of a problem. How to diagnose those? Well, recently I&#8217;m fond of the <code>logging</code> anti-pattern: I log everything to a file so that I can, at a glance, understand if something went&nbsp;sideways.</p>
+<p>Let&#8217;s get to the core of this article. With any long-running job, we, developers, require confidence that the executed program is working as intended and not wasting <span class="caps">CPU</span> cycles because of a problem. How to diagnose those? Well, recently I&#8217;m fond of the <code>logging</code> anti-pattern: I log everything to a file so that I can, at a glance, understand if something went&nbsp;sideways.</p>
 <p>But here we can go further than&nbsp;this. </p>
 <h2 id="coverage-basic-attempt">Coverage: basic&nbsp;attempt</h2>
 <p>In fuzzing, we can use code coverage and <code>lighthouse</code> to visualize the fuzzer&#8217;s exploration (and maybe identify bottlenecks). Can we do that with <code>angr</code>?</p>
@@ -418,7 +423,99 @@ total<span class="w"> </span><span class="m">74912</span>
 <p>Notice the last line: <code>repeated 97 times</code>. <code>angr</code> was exploring a loop with 100 iterations. Can be useful to diagnose state&nbsp;explosion!</p>
 <p>For now, the callstack lacks some symbols. Unfortunately, <code>angr</code> doesn&#8217;t yet support Windows symbols. Let&#8217;s remedy&nbsp;that.</p>
 <h2 id="windows-debugging-symbols">Windows Debugging&nbsp;Symbols</h2>
-<p>Windows debugging symbols are available in the form of <code>*.pdb</code> files that live alongside the compiled binary. When it comes to Python libraries that know how to parse <span class="caps">PDB</span> files, we don&#8217;t have much choices. I decided to use <code>pdbparse</code>, which is old and buggy. Examples online did not work for me, so using <code>pycharm's debugger</code> I manually explored all the attributes of a parsed <span class="caps">PDB</span> file and put together the following&nbsp;code:</p>
+<p>Windows debugging symbols are available in the form of <code>*.pdb</code> files that live alongside the compiled&nbsp;binary.</p>
+<h3 id="downloading-symbols">Downloading&nbsp;symbols</h3>
+<p>On Windows platforms, <code>symchk.exe</code> would typically be used to download symbols. However it would be a bit sad to add this kind of dependencies, so let&#8217;s reimplement. If you&#8217;ve ever wondered how <code>symchk.exe</code> works, it basically just does a <span class="caps">HTTP</span> request to this <span class="caps">URL</span>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">msdl</span><span class="o">.</span><span class="n">microsoft</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">download</span><span class="o">/</span><span class="n">symbols</span><span class="o">/</span><span class="p">{</span><span class="n">pdbname</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">signature</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">pdbname</span><span class="p">}</span>
+</code></pre></div>
+
+<ul>
+<li><em>pdbname</em>: the name of the <span class="caps">PDB</span> file. Surprisingly, it&#8217;s not always the same basename as the <span class="caps">PE</span> file. You can get it from <code>PdbFileName</code> in a <code>DIRECTORY_ENTRY_DEBUG</code> entry in the <span class="caps">PE</span>&nbsp;file.</li>
+<li><em>guid</em>: you can get it from the same <code>DIRECTORY_ENTRY_DEBUG</code> entry: <code>Signature_String</code>.</li>
+</ul>
+<p>Because <code>pefile</code> is already in <code>angr</code><span class="quo">&#8216;</span>s dependencies, let&#8217;s reuse&nbsp;it.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">download_pdb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">download_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Download the PDB file for the current binary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        download_dir (str): Directory to save the downloaded PDB.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pdbname</span><span class="p">,</span> <span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pdb_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_pdb_stored_locally</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">pdbname</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDB already exists locally for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">download_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://msdl.microsoft.com/download/symbols/</span><span class="si">{</span><span class="n">pdbname</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">signature</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">pdbname</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading PDB from: </span><span class="si">{</span><span class="n">download_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">head</span><span class="p">(</span>
+        <span class="n">download_url</span><span class="p">,</span>
+        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Microsoft-Symbol-Server/10.0.10036.206&quot;</span><span class="p">},</span>
+        <span class="n">allow_redirects</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">target_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">pdbname</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Microsoft-Symbol-Server/10.0.10036.206&quot;</span><span class="p">},</span>
+                            <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdb</span><span class="p">:</span>
+            <span class="n">pdb</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">pdb</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDB downloaded to: </span><span class="si">{</span><span class="n">target_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdb_path</span> <span class="o">=</span> <span class="n">target_file</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(HTTP </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">) Could not find PDB at </span><span class="si">{</span><span class="n">download_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nd">@staticmethod</span>
+<span class="k">def</span> <span class="nf">get_pdb_info</span><span class="p">(</span><span class="n">binary_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract PDB name and signature from a PE file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        binary_path (str): Path to the PE file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[str, str]: A tuple containing the PDB name and signature.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pe_obj</span> <span class="o">=</span> <span class="n">pefile</span><span class="o">.</span><span class="n">PE</span><span class="p">(</span><span class="n">binary_path</span><span class="p">,</span> <span class="n">fast_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pe_obj</span><span class="o">.</span><span class="n">parse_data_directories</span><span class="p">([</span><span class="n">pefile</span><span class="o">.</span><span class="n">DIRECTORY_ENTRY</span><span class="p">[</span><span class="s1">&#39;IMAGE_DIRECTORY_ENTRY_DEBUG&#39;</span><span class="p">]])</span>
+
+    <span class="k">for</span> <span class="n">debug_entry</span> <span class="ow">in</span> <span class="n">pe_obj</span><span class="o">.</span><span class="n">DIRECTORY_ENTRY_DEBUG</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">debug_entry</span><span class="o">.</span><span class="n">entry</span><span class="p">,</span> <span class="s1">&#39;PdbFileName&#39;</span><span class="p">):</span>
+            <span class="n">pdb_filename</span> <span class="o">=</span> <span class="n">debug_entry</span><span class="o">.</span><span class="n">entry</span><span class="o">.</span><span class="n">PdbFileName</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">guid</span> <span class="o">=</span> <span class="n">debug_entry</span><span class="o">.</span><span class="n">entry</span><span class="o">.</span><span class="n">Signature_String</span>
+
+            <span class="c1"># Use only the filename if a full path is given</span>
+            <span class="n">pdb_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pdb_filename</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">pdb_filename</span><span class="p">,</span> <span class="n">guid</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No PDB debug information found in the PE file&quot;</span><span class="p">)</span>
+
+<span class="nd">@staticmethod</span>
+<span class="k">def</span> <span class="nf">is_pdb_stored_locally</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the PDB file already exists locally.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Notice that User-Agent header we&#8217;re sending? <code>Microsoft-Symbol-Server/10.0.10036.206</code>. That&#8217;s us pretending to be a legit symbol server client. Sometimes, you gotta play dress-up to get what you&nbsp;want!</p>
+<p>So, in a nutshell, this code does the&nbsp;following:</p>
+<ol>
+<li>Check if we&#8217;ve already got this <span class="caps">PDB</span> lounging around&nbsp;locally.</li>
+<li>Use <code>pefile</code> to extract the <span class="caps">PDB</span>&nbsp;information.</li>
+<li>Build the <span class="caps">URL</span>.</li>
+<li>Check if Microsoft&#8217;s servers like our request (<span class="caps">HTTP</span>&nbsp;200).</li>
+<li>Download the file. Next time we need it, it&#8217;ll be right there waiting for&nbsp;us.</li>
+<li>If something goes wrong - like the <span class="caps">PDB</span> isn&#8217;t where we expected it to be - we log an error. Because, you know, stuff&nbsp;happens.</li>
+</ol>
+<p>And that&#8217;s pretty much it. We&#8217;ve just sweet-talked Microsoft&#8217;s servers into giving us debug symbols. But before you can go forth and debug like a boss, you must parse it and populate <code>angr</code><span class="quo">&#8216;</span>s kb with the new&nbsp;names.</p>
+<h3 id="demangling">Demangling</h3>
+<p>Symbols in the <span class="caps">PDB</span> file are usually <a href="https://www.emmtrix.com/wiki/Demystifying_C%2B%2B_-_Name_Mangling#:~:text=Name%20mangling%20is%20the%20process,specific%20information%20about%20these%20entities.">mangled</a>. The well known <a href="https://github.com/afq984/python-cxxfilt">cxxfilt</a> library did not work for me, but I discovered <a href="https://github.com/AVGTechnologies/cppmangle">one</a> made by the Antivirus vendor <span class="caps">AVG</span>. Despite the last commit being made 7 years ago, the library works&nbsp;out-of-the-box.</p>
+<h3 id="updating-angrs-knowledge-base">Updating angr&#8217;s knowledge&nbsp;base</h3>
+<p>When it comes to Python libraries that know how to parse <span class="caps">PDB</span> files, we don&#8217;t have much choices. I decided to use <code>pdbparse</code>, which is old and buggy. Examples online did not work for me, so using <code>pycharm's debugger</code> I manually explored all the attributes of a parsed <span class="caps">PDB</span> file and put together the following&nbsp;code:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">load_global_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load global symbols from the PDB.</span>
@@ -463,12 +560,8 @@ total<span class="w"> </span><span class="m">74912</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rva</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">address</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">main_object</span><span class="o">.</span><span class="n">mapped_base</span>
 
-    <span class="n">symbol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rva</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">symbol</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">symbol</span>
-
     <span class="n">adjusted_rva</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">rva</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_section_offset</span>
-    <span class="n">symbol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adjusted_rva</span><span class="p">)</span>
+    <span class="n">symbol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adjusted_rva</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">symbol</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">symbol</span>
 
@@ -530,22 +623,25 @@ total<span class="w"> </span><span class="m">74912</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_symbols</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_global_symbols</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_text_section_offset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdb_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">load_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">load_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">download_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load symbols for the angr project from a PDB file.</span>
 
 <span class="sd">        If the PDB file doesn&#39;t exist, it attempts to download it.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">binary_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">filename</span>
-        <span class="n">pdb_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">binary_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.pdb&quot;</span>
+        <span class="n">pdb_path</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pdb_info</span><span class="p">(</span><span class="n">binary_path</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdb_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">pdb_path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_path</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDB file not found: </span><span class="si">{</span><span class="n">pdb_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">download_pdb</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span> <span class="o">=</span> <span class="n">pdbparse</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span> <span class="o">=</span> <span class="n">pdbparse</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_path</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded PDB file: </span><span class="si">{</span><span class="n">pdb_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to load PDB file&quot;</span><span class="p">)</span>
@@ -607,12 +703,13 @@ total<span class="w"> </span><span class="m">74912</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rva</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">address</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">main_object</span><span class="o">.</span><span class="n">mapped_base</span>
 
-        <span class="n">symbol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rva</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">symbol</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">symbol</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;symbol: Optional[str] = self.symbols.get(rva)</span>
+<span class="sd">        if symbol:</span>
+<span class="sd">            return symbol</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">adjusted_rva</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">rva</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_section_offset</span>
-        <span class="n">symbol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adjusted_rva</span><span class="p">)</span>
+        <span class="n">symbol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adjusted_rva</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">symbol</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">symbol</span>
 
@@ -640,7 +737,12 @@ total<span class="w"> </span><span class="m">74912</span>
 <span class="sd">        Args:</span>
 <span class="sd">            download_dir (str): Directory to save the downloaded PDB.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">pdbname</span><span class="p">,</span> <span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pe_debug_infos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">pdbname</span><span class="p">,</span> <span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pdb_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_pdb_stored_locally</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">pdbname</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDB already exists locally for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
         <span class="n">download_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://msdl.microsoft.com/download/symbols/</span><span class="si">{</span><span class="n">pdbname</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">signature</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">pdbname</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading PDB from: </span><span class="si">{</span><span class="n">download_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -652,38 +754,47 @@ total<span class="w"> </span><span class="m">74912</span>
 
         <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
             <span class="n">target_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">pdbname</span><span class="p">)</span>
-            <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Microsoft-Symbol-Server/10.0.10036.206&quot;</span><span class="p">},</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdb</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Microsoft-Symbol-Server/10.0.10036.206&quot;</span><span class="p">},</span>
+                              <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdb</span><span class="p">:</span>
                 <span class="n">pdb</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">pdb</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
                         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDB downloaded to: </span><span class="si">{</span><span class="n">target_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pdb_path</span> <span class="o">=</span> <span class="n">target_file</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(HTTP </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">) Could not find PDB at </span><span class="si">{</span><span class="n">download_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_pe_debug_infos</span><span class="p">(</span><span class="n">pathtopefile</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_pdb_info</span><span class="p">(</span><span class="n">binary_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract PDB name and signature from a PE file.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            pathtopefile (str): Path to the PE file.</span>
+<span class="sd">            binary_path (str): Path to the PE file.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple[str, str]: A tuple containing the PDB name and signature.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">pefile</span><span class="o">.</span><span class="n">PE</span><span class="p">(</span><span class="n">pathtopefile</span><span class="p">,</span> <span class="n">fast_load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">pedata</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">OPTIONAL_HEADER</span><span class="o">.</span><span class="n">DATA_DIRECTORY</span><span class="p">}</span>
-        <span class="n">raw_debug_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">parse_debug_directory</span><span class="p">(</span><span class="n">pedata</span><span class="p">[</span><span class="s2">&quot;IMAGE_DIRECTORY_ENTRY_DEBUG&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">VirtualAddress</span><span class="p">,</span> <span class="n">pedata</span><span class="p">[</span><span class="s2">&quot;IMAGE_DIRECTORY_ENTRY_DEBUG&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">Size</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">entry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
-        <span class="n">raw_debug_data</span> <span class="o">=</span> <span class="n">raw_debug_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">entry</span>
+        <span class="n">pe_obj</span> <span class="o">=</span> <span class="n">pefile</span><span class="o">.</span><span class="n">PE</span><span class="p">(</span><span class="n">binary_path</span><span class="p">,</span> <span class="n">fast_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">pe_obj</span><span class="o">.</span><span class="n">parse_data_directories</span><span class="p">([</span><span class="n">pefile</span><span class="o">.</span><span class="n">DIRECTORY_ENTRY</span><span class="p">[</span><span class="s1">&#39;IMAGE_DIRECTORY_ENTRY_DEBUG&#39;</span><span class="p">]])</span>
 
-        <span class="n">pdbname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">raw_debug_data</span><span class="o">.</span><span class="n">PdbFileName</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-        <span class="n">signature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">DIRECTORY_ENTRY_DEBUG</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">entry</span><span class="o">.</span><span class="n">Signature_String</span>
+        <span class="k">for</span> <span class="n">debug_entry</span> <span class="ow">in</span> <span class="n">pe_obj</span><span class="o">.</span><span class="n">DIRECTORY_ENTRY_DEBUG</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">debug_entry</span><span class="o">.</span><span class="n">entry</span><span class="p">,</span> <span class="s1">&#39;PdbFileName&#39;</span><span class="p">):</span>
+                <span class="n">pdb_filename</span> <span class="o">=</span> <span class="n">debug_entry</span><span class="o">.</span><span class="n">entry</span><span class="o">.</span><span class="n">PdbFileName</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">guid</span> <span class="o">=</span> <span class="n">debug_entry</span><span class="o">.</span><span class="n">entry</span><span class="o">.</span><span class="n">Signature_String</span>
 
-        <span class="c1"># If an absolute path is embedded the server uses just the filename</span>
-        <span class="n">pdbname</span> <span class="o">=</span> <span class="n">pdbname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># Use only the filename if a full path is given</span>
+                <span class="n">pdb_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pdb_filename</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">pdbname</span><span class="p">,</span> <span class="n">signature</span>
+                <span class="k">return</span> <span class="n">pdb_filename</span><span class="p">,</span> <span class="n">guid</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No PDB debug information found in the PE file&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">is_pdb_stored_locally</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the PDB file already exists locally.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
 </code></pre></div>
 
 <p>And can be used like&nbsp;this:</p>
