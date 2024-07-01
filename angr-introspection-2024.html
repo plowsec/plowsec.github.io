@@ -69,6 +69,7 @@
 	<div class="content">
 		<div class="toc"><span class="toctitle">Table of contents:</span><ul>
 <li><a href="#introduction">Introduction</a></li>
+<li><a href="#background-story">Background&nbsp;story</a></li>
 <li><a href="#angr-for-real-world-use-cases">angr for real-world use&nbsp;cases</a></li>
 <li><a href="#use-pycharm">Use Pycharm</a><ul>
 <li><a href="#debugger">Debugger</a></li>
@@ -94,7 +95,14 @@
 </ul>
 </div>
 <h1 id="introduction">Introduction</h1>
-<p><code>angr</code> is a project that deeply fascinates me. I tried learning it in 2019, then re-tried one year later in 2020. Then I followed Rolf Rolles <span class="caps">SMT</span>-Based Binary Analysis training which literally unlocked something in my brain. However, I was still stuck at the same old problem: why is <code>angr</code> running for so long and eating all my <span class="caps">RAM</span>?</p>
+<p>The <code>tl;dr</code> of this blog post is that we can easily extend <code>angr</code> to show what&#8217;s going on. I&#8217;m sharing code snippets for code-coverage visualization in real-time, per-state trace visualization and other niceties like bringing support for debug symbols for Windows targets. The next section is a personal anecdote, feel free to skip it to get to the technical&nbsp;content!</p>
+<h1 id="background-story">Background&nbsp;story</h1>
+<p><code>angr</code> is a project that deeply fascinates me. I tried learning it in 2019. In the same year, I followed Rolf Rolles <a href="https://www.msreverseengineering.com/purchase-training/kxk0eox2jeg501dk9ba1ybod2jt0xw"><span class="caps">SMT</span>-Based Binary Program Analysis</a> training which literally unlocked something in my&nbsp;brain:</p>
+<ul>
+<li>The guy made a 40,000 lines of code framework + written material for the training over a period of 2.5 years: this helped me put things into perspective and have a more realistic idea of how much time goes into developing new&nbsp;technology.</li>
+<li>The demos were centered around industry use cases as opposed to <span class="caps">CTF</span> problems. It was like learning magic spells you could throw at obfuscated code and make sense of&nbsp;it.</li>
+</ul>
+<p>While I did not instantly apply what I learned, seeds were planted, and each year I tried using <code>angr</code> to solve hard problems, giving up each time. Mostly, I was still stuck at the same old problem: why is <code>angr</code> running for so long and eating all my <span class="caps">RAM</span>?</p>
 <p>At the time, I lacked the skills to properly debug it / ingest its source code. However, years later, I&#8217;m not feeling those obstacles anymore. This is probably due to the fact I&#8217;ve done way harder and painful things in between, so <code>angr</code> source code would not scare me this&nbsp;time!</p>
 <p>Well, fake news. Experimenting with <code>ioctlance</code> in a Windows Driver, I discovered <code>angr</code> was stuck <em>3 function calls deep</em> after the entry point I gave it. I minimized the test case and asked a colleague (<a href="https://x.com/PickleBryne">@PickleBryne</a>) for help. We dug at it for 2 hours, and those 2 hours finally helped me overcome the last mental limits I had with <code>angr</code>.</p>
 <p>My colleague was quite experienced with <code>angr</code> and insisted on going step by step with the exploration, checking constraints each time with <code>state.solver.constraints</code>. Then, we found that after a call to <code>memmove</code>, that was hooked by a <code>ioctlance</code> <code>SimProcedure</code>, an <code>unsat</code> constraint was&nbsp;added. </p>
@@ -425,12 +433,12 @@ total<span class="w"> </span><span class="m">74912</span>
 <h2 id="windows-debugging-symbols">Windows Debugging&nbsp;Symbols</h2>
 <p>Windows debugging symbols are available in the form of <code>*.pdb</code> files that live alongside the compiled&nbsp;binary.</p>
 <h3 id="downloading-symbols">Downloading&nbsp;symbols</h3>
-<p>On Windows platforms, <code>symchk.exe</code> would typically be used to download symbols. However it would be a bit sad to add this kind of dependencies, so let&#8217;s reimplement. If you&#8217;ve ever wondered how <code>symchk.exe</code> works, it basically just does a <span class="caps">HTTP</span> request to this <span class="caps">URL</span>:</p>
+<p>On Windows platforms, <code>symchk.exe</code> would typically be used to download symbols. However it would be a bit sad to add this kind of dependencies, so let&#8217;s reimplement it. If you&#8217;ve ever wondered how <code>symchk.exe</code> works, it basically just does a <span class="caps">HTTP</span> request to this <span class="caps">URL</span>:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">msdl</span><span class="o">.</span><span class="n">microsoft</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">download</span><span class="o">/</span><span class="n">symbols</span><span class="o">/</span><span class="p">{</span><span class="n">pdbname</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">signature</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">pdbname</span><span class="p">}</span>
 </code></pre></div>
 
 <ul>
-<li><em>pdbname</em>: the name of the <span class="caps">PDB</span> file. Surprisingly, it&#8217;s not always the same basename as the <span class="caps">PE</span> file. You can get it from <code>PdbFileName</code> in a <code>DIRECTORY_ENTRY_DEBUG</code> entry in the <span class="caps">PE</span>&nbsp;file.</li>
+<li><em>pdbname</em>: the name of the <span class="caps">PDB</span> file. Surprisingly, it&#8217;s not always the same name as the <span class="caps">PE</span> file (it&#8217;s <code>ntkrnlmp.pdb</code> for <code>ntoskrnl.exe</code>). You can get it from the field <code>PdbFileName</code> by walking the <code>DIRECTORY_ENTRY_DEBUG</code> entries in the <span class="caps">PE</span>&nbsp;file.</li>
 <li><em>guid</em>: you can get it from the same <code>DIRECTORY_ENTRY_DEBUG</code> entry: <code>Signature_String</code>.</li>
 </ul>
 <p>Because <code>pefile</code> is already in <code>angr</code><span class="quo">&#8216;</span>s dependencies, let&#8217;s reuse&nbsp;it.</p>
