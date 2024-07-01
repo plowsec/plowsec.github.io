@@ -5,7 +5,7 @@
 &lt;li&gt;&lt;a href="#use-pycharm"&gt;Use Pycharm&lt;/a&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#debugger"&gt;Debugger&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#conditional-breakpoints"&gt;Conditional&amp;nbsp;breakpoints&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#custom-data-renderer"&gt;Custom Data&amp;nbsp;Renderer&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#custom-type-renderer"&gt;Custom Type&amp;nbsp;Renderer&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;a href="#using-pickle"&gt;Using&amp;nbsp;pickle&lt;/a&gt;&lt;/li&gt;
@@ -102,11 +102,11 @@
 &lt;h2 id="conditional-breakpoints"&gt;Conditional&amp;nbsp;breakpoints&lt;/h2&gt;
 &lt;p&gt;What if you&amp;#8217;re aware that a bug happens only when specific conditions are met, or after many iterations of a loop, or after 5 minutes of execution time? You can of course be really patient and use manual steps and / or &lt;code&gt;print&lt;/code&gt; statements, but the right tool for that is conditional breakpoints. Here are real examples of breakpoints I set for a debugging&amp;nbsp;session:&lt;/p&gt;
 &lt;p&gt;&lt;a href="/images/conditional_breakpoints.png" title="Pycharm's  conditional breakpoints"&gt;&lt;img alt="Pycharm's conditional breakpoints" src="/images/conditional_breakpoints.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id="custom-data-renderer"&gt;Custom Data&amp;nbsp;Renderer&lt;/h2&gt;
+&lt;h2 id="custom-type-renderer"&gt;Custom Type&amp;nbsp;Renderer&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;PyCharm&lt;/code&gt; provides a way to customize the way data is shown in the debugger. For &lt;code&gt;angr&lt;/code&gt;, I find myself often reading hexadecimal addresses and jumping back and forth between &lt;code&gt;angr&lt;/code&gt; and &lt;code&gt;IDA Pro&lt;/code&gt;. When &lt;code&gt;PyCharm&lt;/code&gt; shows me addresses in base 10, I don&amp;#8217;t recognize them anymore and doing &lt;code&gt;print(hex(x))&lt;/code&gt; is only fun the first 10,000&amp;nbsp;times:&lt;/p&gt;
-&lt;p&gt;&lt;a href="/images/data_renderer1.png" title="Pycharm's Data Renderer"&gt;&lt;img alt="Pycharm's Data Renderer" src="/images/data_renderer1.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="/images/data_renderer1.png" title="Pycharm's Custom Type Renderer"&gt;&lt;img alt="Pycharm's Custom Type Renderer" src="/images/data_renderer1.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;And the same for &lt;code&gt;dict&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;a href="/images/data_renderer2.png" title="Pycharm's Data Renderer"&gt;&lt;img alt="Pycharm's Data Renderer" src="/images/data_renderer2.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="/images/data_renderer2.png" title="Pycharm's Custom Type Renderer"&gt;&lt;img alt="Pycharm's Custom Type Renderer" src="/images/data_renderer2.png" width="600px"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;The code in the second screenshot is (thanks &lt;code&gt;Claude 3.5&lt;/code&gt;):&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="p"&gt;{(&lt;/span&gt;&lt;span class="nb"&gt;hex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;hex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;()}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;

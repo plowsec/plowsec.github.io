@@ -73,7 +73,7 @@
 <li><a href="#use-pycharm">Use Pycharm</a><ul>
 <li><a href="#debugger">Debugger</a></li>
 <li><a href="#conditional-breakpoints">Conditional&nbsp;breakpoints</a></li>
-<li><a href="#custom-data-renderer">Custom Data&nbsp;Renderer</a></li>
+<li><a href="#custom-type-renderer">Custom Type&nbsp;Renderer</a></li>
 </ul>
 </li>
 <li><a href="#using-pickle">Using&nbsp;pickle</a></li>
@@ -170,11 +170,11 @@
 <h2 id="conditional-breakpoints">Conditional&nbsp;breakpoints</h2>
 <p>What if you&#8217;re aware that a bug happens only when specific conditions are met, or after many iterations of a loop, or after 5 minutes of execution time? You can of course be really patient and use manual steps and / or <code>print</code> statements, but the right tool for that is conditional breakpoints. Here are real examples of breakpoints I set for a debugging&nbsp;session:</p>
 <p><a href="/images/conditional_breakpoints.png" title="Pycharm's  conditional breakpoints"><img alt="Pycharm's conditional breakpoints" src="/images/conditional_breakpoints.png" width="600px"></a></p>
-<h2 id="custom-data-renderer">Custom Data&nbsp;Renderer</h2>
+<h2 id="custom-type-renderer">Custom Type&nbsp;Renderer</h2>
 <p><code>PyCharm</code> provides a way to customize the way data is shown in the debugger. For <code>angr</code>, I find myself often reading hexadecimal addresses and jumping back and forth between <code>angr</code> and <code>IDA Pro</code>. When <code>PyCharm</code> shows me addresses in base 10, I don&#8217;t recognize them anymore and doing <code>print(hex(x))</code> is only fun the first 10,000&nbsp;times:</p>
-<p><a href="/images/data_renderer1.png" title="Pycharm's Data Renderer"><img alt="Pycharm's Data Renderer" src="/images/data_renderer1.png" width="600px"></a></p>
+<p><a href="/images/data_renderer1.png" title="Pycharm's Custom Type Renderer"><img alt="Pycharm's Custom Type Renderer" src="/images/data_renderer1.png" width="600px"></a></p>
 <p>And the same for <code>dict</code>:</p>
-<p><a href="/images/data_renderer2.png" title="Pycharm's Data Renderer"><img alt="Pycharm's Data Renderer" src="/images/data_renderer2.png" width="600px"></a></p>
+<p><a href="/images/data_renderer2.png" title="Pycharm's Custom Type Renderer"><img alt="Pycharm's Custom Type Renderer" src="/images/data_renderer2.png" width="600px"></a></p>
 <p>The code in the second screenshot is (thanks <code>Claude 3.5</code>):</p>
 <div class="codehilite"><pre><span></span><code><span class="p">{(</span><span class="nb">hex</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">k</span><span class="p">):</span> <span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 </code></pre></div>
