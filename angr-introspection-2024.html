@@ -140,7 +140,7 @@
 <p>That&#8217;s not a bug, that&#8217;s the best angr can do. What do you expect the result of loading from an unconstrained pointer to be? We have to concretize it in order to be able to continue execution.&nbsp;rhelmot</p>
 </blockquote>
 <p>The rhetoric question from <code>rhelmot</code> sounds smart indeed but newbs like me didn&#8217;t even think about it before running into the&nbsp;problem.</p>
-<p>So the fix was simple, I used the <code>strcpy</code> <code>SimProcedure</code> already available in <code>angr</code> and then it all went very well. I&#8217;m telling this anectote for 2&nbsp;reasons:</p>
+<p>So the fix was simple, I used the <code>strcpy</code> <code>SimProcedure</code> already available in <code>angr</code> and then it all went very well. I&#8217;m telling this anecdote for 2&nbsp;reasons:</p>
 <ul>
 <li>Persistence is&nbsp;key</li>
 <li>Useful to show case my worflow when leveraging &#8220;blackbox&#8221;&nbsp;tools.</li>
@@ -154,7 +154,7 @@
 </ul>
 <p>Let&#8217;s tackle the 3rd problem&nbsp;first.</p>
 <h1 id="use-pycharm">Use&nbsp;Pycharm</h1>
-<p>Modern IDEs are a must. Honestly I don&#8217;t understand those working on big projects with Vim. It&#8217;s lack coding with your hands tied behind your back. With <code>angr</code>, the documentation does not cover enough information if you&#8217;re looking for a specific use case, so you have two (non-exclusive)&nbsp;options:</p>
+<p>Modern IDEs are a must. Honestly I don&#8217;t understand those working on big projects with Vim. It&#8217;s like coding with your hands tied behind your back. With <code>angr</code>, the documentation does not cover enough information if you&#8217;re looking for a specific use case, so you have two (non-exclusive)&nbsp;options:</p>
 <ol>
 <li>Reading the source&nbsp;code</li>
 <li>Playing with the object attributes and see what they&nbsp;contain.</li>
@@ -192,7 +192,7 @@ Pickle will work. However, Python will default to using an extremely old pickle 
 <li><code>angr.analyses.CFGEmulated</code></li>
 <li>The Simulation Manager after a succesful but time consuming <code>.explore</code> call!</li>
 </ol>
-<p>By doing this, you can resume your <code>angr</code> script and thuse iterate rapidly on the trial-error process that, in my opinion, is primordial to learn something new and build&nbsp;something.</p>
+<p>By doing this, you can resume your <code>angr</code> script and thuse iterate rapidly on the trial-error process that, in my opinion, primordial to both learn and build somehting&nbsp;new.</p>
 <h1 id="introspection">Introspection</h1>
 <p>Let&#8217;s get to the core of this article. With any long-running job, we, developers, require confidence that the executed program is working and not wasting <span class="caps">CPU</span> cycles because of a problem. How to diagnose those? Well, recently I&#8217;m fond of the <code>logging</code> anti-pattern: I log everything to a file so that I can, at a glance, understand if something went&nbsp;sideways.</p>
 <p>But here we can go further than&nbsp;this. </p>

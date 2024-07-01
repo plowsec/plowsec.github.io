@@ -72,7 +72,7 @@
 &lt;p&gt;That&amp;#8217;s not a bug, that&amp;#8217;s the best angr can do. What do you expect the result of loading from an unconstrained pointer to be? We have to concretize it in order to be able to continue execution.&amp;nbsp;rhelmot&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;The rhetoric question from &lt;code&gt;rhelmot&lt;/code&gt; sounds smart indeed but newbs like me didn&amp;#8217;t even think about it before running into the&amp;nbsp;problem.&lt;/p&gt;
-&lt;p&gt;So the fix was simple, I used the &lt;code&gt;strcpy&lt;/code&gt; &lt;code&gt;SimProcedure&lt;/code&gt; already available in &lt;code&gt;angr&lt;/code&gt; and then it all went very well. I&amp;#8217;m telling this anectote for 2&amp;nbsp;reasons:&lt;/p&gt;
+&lt;p&gt;So the fix was simple, I used the &lt;code&gt;strcpy&lt;/code&gt; &lt;code&gt;SimProcedure&lt;/code&gt; already available in &lt;code&gt;angr&lt;/code&gt; and then it all went very well. I&amp;#8217;m telling this anecdote for 2&amp;nbsp;reasons:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Persistence is&amp;nbsp;key&lt;/li&gt;
 &lt;li&gt;Useful to show case my worflow when leveraging &amp;#8220;blackbox&amp;#8221;&amp;nbsp;tools.&lt;/li&gt;
@@ -86,7 +86,7 @@
 &lt;/ul&gt;
 &lt;p&gt;Let&amp;#8217;s tackle the 3rd problem&amp;nbsp;first.&lt;/p&gt;
 &lt;h1 id="use-pycharm"&gt;Use&amp;nbsp;Pycharm&lt;/h1&gt;
-&lt;p&gt;Modern IDEs are a must. Honestly I don&amp;#8217;t understand those working on big projects with Vim. It&amp;#8217;s lack coding with your hands tied behind your back. With &lt;code&gt;angr&lt;/code&gt;, the documentation does not cover enough information if you&amp;#8217;re looking for a specific use case, so you have two (non-exclusive)&amp;nbsp;options:&lt;/p&gt;
+&lt;p&gt;Modern IDEs are a must. Honestly I don&amp;#8217;t understand those working on big projects with Vim. It&amp;#8217;s like coding with your hands tied behind your back. With &lt;code&gt;angr&lt;/code&gt;, the documentation does not cover enough information if you&amp;#8217;re looking for a specific use case, so you have two (non-exclusive)&amp;nbsp;options:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Reading the source&amp;nbsp;code&lt;/li&gt;
 &lt;li&gt;Playing with the object attributes and see what they&amp;nbsp;contain.&lt;/li&gt;
@@ -124,7 +124,7 @@ Pickle will work. However, Python will default to using an extremely old pickle 
 &lt;li&gt;&lt;code&gt;angr.analyses.CFGEmulated&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;The Simulation Manager after a succesful but time consuming &lt;code&gt;.explore&lt;/code&gt; call!&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;By doing this, you can resume your &lt;code&gt;angr&lt;/code&gt; script and thuse iterate rapidly on the trial-error process that, in my opinion, is primordial to learn something new and build&amp;nbsp;something.&lt;/p&gt;
+&lt;p&gt;By doing this, you can resume your &lt;code&gt;angr&lt;/code&gt; script and thuse iterate rapidly on the trial-error process that, in my opinion, primordial to both learn and build somehting&amp;nbsp;new.&lt;/p&gt;
 &lt;h1 id="introspection"&gt;Introspection&lt;/h1&gt;
 &lt;p&gt;Let&amp;#8217;s get to the core of this article. With any long-running job, we, developers, require confidence that the executed program is working and not wasting &lt;span class="caps"&gt;CPU&lt;/span&gt; cycles because of a problem. How to diagnose those? Well, recently I&amp;#8217;m fond of the &lt;code&gt;logging&lt;/code&gt; anti-pattern: I log everything to a file so that I can, at a glance, understand if something went&amp;nbsp;sideways.&lt;/p&gt;
 &lt;p&gt;But here we can go further than&amp;nbsp;this. &lt;/p&gt;
