@@ -91,10 +91,10 @@
 <h1 id="introduction">Introduction</h1>
 <p><code>angr</code> is a project that deeply fascinates me. I tried learning it in 2019, then re-tried one year later in 2020. Then I followed Rolf Rolles <span class="caps">SMT</span>-Based Binary Analysis training which literally unlocked something in my brain. However, I was still stuck at the same old problem: why is <code>angr</code> running for so long and eating all my <span class="caps">RAM</span>?</p>
 <p>At the time, I lacked the skills to properly debug it / ingest its source code. However, years later, I&#8217;m not feeling those obstacles anymore. This is probably due to the fact I&#8217;ve done way harder and painful things in between, so <code>angr</code> source code would not scare me this&nbsp;time!</p>
-<p>Well, fake news. Experimenting with <code>ioctlance</code> in a Windows Driver, I discovered <code>angr</code> was stuck <em>3 function calls deep</em> after the entry point I gave it. I minimized the test case and asked a colleague for help. We dug at it for 2 hours, and those 2 hours finally helped me overcome the last mental limits I had with <code>angr</code>.</p>
-<p>My colleague was quite experimented with <code>angr</code> and insisted on going step by step with the exploration, checking constraints each time with <code>state.solver.constraints</code>. Then, we found that after a call to <code>memmove</code>, that was hooked by a <code>ioctlance</code> <code>SimProcedure</code>, an <code>unsat</code> constraint was&nbsp;added. </p>
+<p>Well, fake news. Experimenting with <code>ioctlance</code> in a Windows Driver, I discovered <code>angr</code> was stuck <em>3 function calls deep</em> after the entry point I gave it. I minimized the test case and asked a colleague (<a href="https://x.com/PickleBryne">@PickleBryne</a>) for help. We dug at it for 2 hours, and those 2 hours finally helped me overcome the last mental limits I had with <code>angr</code>.</p>
+<p>My colleague was quite experienced with <code>angr</code> and insisted on going step by step with the exploration, checking constraints each time with <code>state.solver.constraints</code>. Then, we found that after a call to <code>memmove</code>, that was hooked by a <code>ioctlance</code> <code>SimProcedure</code>, an <code>unsat</code> constraint was&nbsp;added. </p>
 <p>My buffer&#8217;s address was <code>0xfffffffff</code> and the Windows driver was doing some kind of overflow check on this address, and did not accept it. Weird! The hook&#8217;s implementation looked totally normal to us. It sure didn&#8217;t return this rather weird&nbsp;value.</p>
-<p>My colleague ran out of helping time budget and I continued by myself for 1 hour, using <code>Pycharm</code> debugger to pinpoint when and why this address appeared. Then I found the&nbsp;culprint:</p>
+<p>My colleague ran out of helping time budget and I continued by myself for 1 hour, using <code>Pycharm</code> debugger to pinpoint when and why this address appeared. Then I found the&nbsp;culprit:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Fast path</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
@@ -143,10 +143,10 @@
 <p>So the fix was simple, I used the <code>strcpy</code> <code>SimProcedure</code> already available in <code>angr</code> and then it all went very well. I&#8217;m telling this anecdote for 2&nbsp;reasons:</p>
 <ul>
 <li>Persistence is&nbsp;key</li>
-<li>Useful to show case my worflow when leveraging &#8220;blackbox&#8221;&nbsp;tools.</li>
+<li>Useful to showcase my workflow when leveraging &#8220;blackbox&#8221;&nbsp;tools.</li>
 </ul>
 <h1 id="angr-for-real-world-use-cases">angr for real-world use&nbsp;cases</h1>
-<p>At this point, I was convinced <code>angr</code><span class="quo">&#8216;</span>s problems were fixable with effort and a methodological approach. Duh&#8230;but research has a psychological factor and you must believe in yourself to sink even more time and effort when nothing has payed off so far. With this newfound confidence, I was ready to tackle the next&nbsp;steps: </p>
+<p>At this point, I was convinced <code>angr</code><span class="quo">&#8216;</span>s problems were fixable with effort and a methodological approach. Duh&#8230;but research has a psychological factor and you must believe in yourself to sink even more time and effort when nothing has paid off so far. With this newfound confidence, I was ready to tackle the next&nbsp;steps: </p>
 <ul>
 <li>Understanding what the heck <code>angr</code> is&nbsp;doing.</li>
 <li>Finding a solution to &#8220;resume&#8221; <code>angr</code><span class="quo">&#8216;</span>s analysis: it takes 5 minutes for it to find my target address, and I dislike waiting 5 minutes each time I run my&nbsp;script.</li>
@@ -180,7 +180,7 @@
 </code></pre></div>
 
 <h1 id="using-pickle">Using&nbsp;pickle</h1>
-<p>I&#8217;ve known <code>pickle</code> for a while because I used it heavily in my trading bot. Thus, I know how painful it is to make <span class="caps">ALL</span> your classes serializable, and assumed <code>angr</code> was too complex to be pickl-able. I was&nbsp;wrong!</p>
+<p>I&#8217;ve known <code>pickle</code> for a while because I used it heavily in my trading bot. Thus, I know how painful it is to make <span class="caps">ALL</span> your classes serializable, and assumed <code>angr</code> was too complex to be pickle-able. I was&nbsp;wrong!</p>
 <p>From the <a href="https://docs.angr.io/en/latest/faq.html">documentation</a>:</p>
 <blockquote>
 <p>How do I serialize angr objects?
@@ -192,7 +192,7 @@ Pickle will work. However, Python will default to using an extremely old pickle 
 <li><code>angr.analyses.CFGEmulated</code></li>
 <li>The Simulation Manager after a succesful but time consuming <code>.explore</code> call!</li>
 </ol>
-<p>By doing this, you can resume your <code>angr</code> script and thuse iterate rapidly on the trial-error process that, in my opinion, primordial to both learn and build somehting&nbsp;new.</p>
+<p>By doing this, you can resume your <code>angr</code> script and thus iterate rapidly on the trial-error process that, in my opinion, primordial to both learn and build something&nbsp;new.</p>
 <h1 id="introspection">Introspection</h1>
 <p>Let&#8217;s get to the core of this article. With any long-running job, we, developers, require confidence that the executed program is working and not wasting <span class="caps">CPU</span> cycles because of a problem. How to diagnose those? Well, recently I&#8217;m fond of the <code>logging</code> anti-pattern: I log everything to a file so that I can, at a glance, understand if something went&nbsp;sideways.</p>
 <p>But here we can go further than&nbsp;this. </p>
