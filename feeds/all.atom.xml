@@ -135,7 +135,7 @@
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;h2 id="technical-implementation"&gt;Technical&amp;nbsp;Implementation&lt;/h2&gt;
-&lt;p&gt;The core of the implementation relies on asynchronous websocket communication. This allows for efficient handling of multiple game analyses concurrently. The script utilizes Python&amp;#8217;s &lt;code&gt;asyncio&lt;/code&gt; and &lt;code&gt;websockets&lt;/code&gt; libraries to achieve&amp;nbsp;this.&lt;/p&gt;
+&lt;p&gt;The (almost) complete script is available below. It takes care of all the steps described above, except for the login, left as an exercise to the&amp;nbsp;reader.&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;traceback&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;datetime&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;os&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;environ&lt;/span&gt;
