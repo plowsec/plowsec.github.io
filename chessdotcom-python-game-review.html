@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Automated Chess.com Game Review Extraction Using Python | volodya</title>
+	<meta name="description" content="Python Script to Interact with Chess.com’s Undocumented Game Review API and Extract Estimated Elo">
+	<meta name="author" content="plowsec">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="@volodiyah">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="@volodiyah">
+	<meta property="og:title" content="Automated Chess.com Game Review Extraction Using Python">
+	<meta property="og:description" content="Python Script to Interact with Chess.com’s Undocumented Game Review API and Extract Estimated Elo">
+	<meta property="og:image" content="/images/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/chessdotcom-python-game-review.html">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css?635a1f3c" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FF8000">
+	<meta name="google-site-verification" content="9iiuP1IGbCXy85riRmrFC_68Vh3CldZM2tvAfxyuXT0" />
+	<meta name="msapplication-TileColor" content="#FF8000">
+	<meta name="msapplication-TileImage" content="/images/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/images/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/images/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/images/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/images/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/images/icons/avatar.png"></a>
+			<div id="name"><a href="/">volodya</a></div>
+			<div id="bio">Security Engineer interested in Program Analysis, (de)obfuscation and antivirus engines. Stripped binaries || GTFO.</div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>
+			</div>
+
+			<div id="social">
+				<a href="mailto:united.marshmallow(at)gmail.com" title="Email (united.marshmallow(at)gmail.com)" class="icon fa fa-envelope"></a>
+				<a href="https://twitter.com/volodiyah" title="Twitter" class="icon fa fa-twitter"></a>
+				<a href="https://github.com/plowsec" title="GitHub" class="icon fa fa-github"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/chessdotcom-python-game-review.html" title="Permalink to Automated Chess.com Game Review Extraction Using Python">Automated Chess.com Game Review Extraction Using&nbsp;Python</a></h1>
+	<time class="date" datetime="2024-09-05 00:00:00+02:00">Thu 05 September 2024</time>
+	<div class="content">
+		<div class="toc"><span class="toctitle">Table of contents:</span><ul>
+<li><a href="#chesscom-game-analysis">Chess.com Game Analysis</a><ul>
+<li><a href="#methodology">Methodology</a><ul>
+<li><a href="#cookies">Cookies</a><ul>
+<li><a href="#captcha-bypass"><span class="caps">CAPTCHA</span>&nbsp;bypass</a></li>
+<li><a href="#http-client-fingerprinting"><span class="caps">HTTP</span> client&nbsp;fingerprinting</a></li>
+<li><a href="#final-solution">Final&nbsp;solution</a></li>
+</ul>
+</li>
+<li><a href="#game-review">Game&nbsp;Review</a></li>
+</ul>
+</li>
+<li><a href="#technical-implementation">Technical&nbsp;Implementation</a></li>
+<li><a href="#data-analysis">Data&nbsp;Analysis</a></li>
+<li><a href="#results">Results</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="chesscom-game-analysis">Chess.com Game&nbsp;Analysis</h1>
+<p><em>chess.c*m</em> exposes a Public <span class="caps">API</span> to download information about players and games, but the Game Review is not part of it. This blog posts shows how one can interact with this undocumented <span class="caps">API</span> and, as a Proof-of-Concept, extract the estimated&nbsp;Elo.</p>
+<p><a class="mybox" href="/images/effective_elo.png" title="Example of Effective Elo"><img alt="Example of Effective Elo" src="/images/effective_elo.png" width="600px"></a></p>
+<ul>
+<li>Note 1: the official terminology for this metric is &#8220;Effective Elo&#8221;, so this article will switch to that from now&nbsp;on.</li>
+<li>Note 2: Game Review is paywalled and the script below does not try to go around&nbsp;that.</li>
+</ul>
+<h2 id="methodology">Methodology</h2>
+<p>I mainly used Burp Suite to reverse-engineer the workflow from <em>Login</em> to <em>Game Review</em>. A summary of it is available&nbsp;below.</p>
+<ol>
+<li>Authenticate and get valid&nbsp;cookies.</li>
+<li>Use the official <span class="caps">API</span> to retrieve recent game&nbsp;IDs.</li>
+<li>Get a Game Analysis&nbsp;Token.</li>
+<li>Websocket-based communication with the analysis server to trigger a game&nbsp;review.</li>
+<li>Parse the <span class="caps">JSON</span> output and extract relevant&nbsp;data.</li>
+</ol>
+<h3 id="cookies">Cookies</h3>
+<p>The step 3 <em>Get a Game Analysis Token</em> requires calling the unofficial <span class="caps">API</span> endpoint <code>/callback/auth/service/analysis</code>. It returns a <span class="caps">JSON</span> object with a <code>token</code> attribute:</p>
+<div class="codehilite"><pre><span></span><code><span class="kr">HTTP</span><span class="o">/</span><span class="m">2</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+
+<span class="p">{</span><span class="nt">&quot;token&quot;</span><span class="p">:</span><span class="s2">&quot;XXXXX&quot;</span><span class="p">}</span>
+</code></pre></div>
+
+<p>This endpoint enforces a cookie-based authentication. We get cookies when we login on <em>chess.c*m</em>. However, doing this programmatically is not straightforward, as they try to prevent it. I will not include my solution to bypass this in the script at the end because I don&#8217;t want to cause them any harm, but for reproducibility reasons you can find a high level overview of my&nbsp;approach.</p>
+<h4 id="captcha-bypass"><span class="caps">CAPTCHA</span>&nbsp;bypass</h4>
+<p>I gave myself 30 minutes to break their captcha. I used <code>Pillow</code> and <code>OpenCV</code> to try and remove some noise before reading the text with <code>pytesseract</code>, but didn&#8217;t succeed quickly. I then resorted to some <em><span class="caps">CAPTCHA</span></em> bypass <em>SaaS</em>.</p>
+<h4 id="http-client-fingerprinting"><span class="caps">HTTP</span> client&nbsp;fingerprinting</h4>
+<p>Getting past the <em><span class="caps">CAPTCHA</span></em> is not sufficient as there is the CloudFlare Security Check afterwards. It was at this step I decided to rethink my approach and do this&nbsp;differently.</p>
+<h4 id="final-solution">Final&nbsp;solution</h4>
+<p>Instead, I opted for a frontend-testing tool that can automate a legitimate browser programmatically (I&#8217;m intentionally vague about this as I mentioned&nbsp;earlier).</p>
+<h3 id="game-review">Game&nbsp;Review</h3>
+<p>The <em>Game Review</em> works over a Websocket. It requires a Game Analysis Token, a Game <span class="caps">ID</span>, a <span class="caps">PGN</span>, the user&#8217;s color and some optional settings for the chess&nbsp;engine:</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gameAnalysis&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;game&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;pgn&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;[Event \&quot;Live Chess\&quot;]\n[Site \&quot;Chess.com\&quot;]....&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;caps2&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;depth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;engineType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;stockfish16 nnue&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;gameId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;XXX&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;gameType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;live&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;XXX&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;client&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;web&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;userTimeZone&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Europe/Berlin&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;strength&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Fast&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;tep&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;ceeDebug&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;classificationv3&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;userColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;lang&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;en_US&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;speechv3&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The server replies with several messages, indicating the analysis&#8217; progress and then 50k lines of <span class="caps">JSON</span>:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">DEBUG</span><span class="p">:</span><span class="err">websocke</span><span class="kc">ts</span><span class="err">.clie</span><span class="kc">nt</span><span class="p">:</span><span class="err">&lt;</span><span class="w"> </span><span class="err">TEXT</span><span class="w"> </span><span class="err">&#39;</span><span class="p">{</span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="s2">&quot;progress&quot;</span><span class="p">,</span><span class="nt">&quot;progress&quot;</span><span class="p">:</span><span class="mf">0.01</span><span class="p">,</span><span class="s2">&quot;engineTyp...nue&quot;</span><span class="p">,</span><span class="nt">&quot;strength&quot;</span><span class="p">:</span><span class="s2">&quot;Fast&quot;</span><span class="p">}</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="mi">87</span><span class="w"> </span><span class="err">by</span><span class="kc">tes</span><span class="p">]</span>
+<span class="err">DEBUG</span><span class="p">:</span><span class="err">websocke</span><span class="kc">ts</span><span class="err">.clie</span><span class="kc">nt</span><span class="p">:</span><span class="err">&lt;</span><span class="w"> </span><span class="err">TEXT</span><span class="w"> </span><span class="err">&#39;</span><span class="p">{</span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="s2">&quot;progress&quot;</span><span class="p">,</span><span class="nt">&quot;progress&quot;</span><span class="p">:</span><span class="mf">0.02</span><span class="p">,</span><span class="s2">&quot;engineTyp...nue&quot;</span><span class="p">,</span><span class="nt">&quot;strength&quot;</span><span class="p">:</span><span class="s2">&quot;Fast&quot;</span><span class="p">}</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="mi">87</span><span class="w"> </span><span class="err">by</span><span class="kc">tes</span><span class="p">]</span>
+<span class="err">DEBUG</span><span class="p">:</span><span class="err">websocke</span><span class="kc">ts</span><span class="err">.clie</span><span class="kc">nt</span><span class="p">:</span><span class="err">&lt;</span><span class="w"> </span><span class="err">TEXT</span><span class="w"> </span><span class="err">&#39;</span><span class="p">{</span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="s2">&quot;progress&quot;</span><span class="p">,</span><span class="nt">&quot;progress&quot;</span><span class="p">:</span><span class="mf">0.1428571428571...</span><span class="kc">nue</span><span class="s2">&quot;,&quot;</span><span class="err">s</span><span class="kc">tren</span><span class="err">g</span><span class="kc">t</span><span class="err">h</span><span class="s2">&quot;:&quot;</span><span class="err">Fas</span><span class="kc">t</span><span class="s2">&quot;}&#39; [102 bytes]</span>
+<span class="s2">DEBUG:websockets.client:&lt; TEXT &#39;{&quot;</span><span class="err">ac</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="s2">&quot;:&quot;</span><span class="err">progress</span><span class="s2">&quot;,&quot;</span><span class="err">progress</span><span class="s2">&quot;:0.1632653061224...nue&quot;</span><span class="p">,</span><span class="nt">&quot;strength&quot;</span><span class="p">:</span><span class="s2">&quot;Fast&quot;</span><span class="p">}</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="mi">102</span><span class="w"> </span><span class="err">by</span><span class="kc">tes</span><span class="p">]</span>
+<span class="err">DEBUG</span><span class="p">:</span><span class="err">websocke</span><span class="kc">ts</span><span class="err">.clie</span><span class="kc">nt</span><span class="p">:</span><span class="err">&lt;</span><span class="w"> </span><span class="err">TEXT</span><span class="w"> </span><span class="err">&#39;</span><span class="p">{</span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="s2">&quot;progress&quot;</span><span class="p">,</span><span class="nt">&quot;progress&quot;</span><span class="p">:</span><span class="mf">0.2040816326530...</span><span class="kc">nue</span><span class="s2">&quot;,&quot;</span><span class="err">s</span><span class="kc">tren</span><span class="err">g</span><span class="kc">t</span><span class="err">h</span><span class="s2">&quot;:&quot;</span><span class="err">Fas</span><span class="kc">t</span><span class="s2">&quot;}&#39; [102 bytes]</span>
+<span class="s2">DEBUG:websockets.client:&lt; TEXT &#39;{&quot;</span><span class="err">ac</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="s2">&quot;:&quot;</span><span class="err">progress</span><span class="s2">&quot;,&quot;</span><span class="err">progress</span><span class="s2">&quot;:0.4081632653061...nue&quot;</span><span class="p">,</span><span class="nt">&quot;strength&quot;</span><span class="p">:</span><span class="s2">&quot;Fast&quot;</span><span class="p">}</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="mi">102</span><span class="w"> </span><span class="err">by</span><span class="kc">tes</span><span class="p">]</span>
+<span class="err">DEBUG</span><span class="p">:</span><span class="err">websocke</span><span class="kc">ts</span><span class="err">.clie</span><span class="kc">nt</span><span class="p">:</span><span class="err">&lt;</span><span class="w"> </span><span class="err">TEXT</span><span class="w"> </span><span class="err">&#39;</span><span class="p">{</span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="s2">&quot;progress&quot;</span><span class="p">,</span><span class="nt">&quot;progress&quot;</span><span class="p">:</span><span class="mf">0.6938775510204...</span><span class="kc">nue</span><span class="s2">&quot;,&quot;</span><span class="err">s</span><span class="kc">tren</span><span class="err">g</span><span class="kc">t</span><span class="err">h</span><span class="s2">&quot;:&quot;</span><span class="err">Fas</span><span class="kc">t</span><span class="s2">&quot;}&#39; [101 bytes]</span>
+<span class="s2">DEBUG:websockets.client:&lt; TEXT &#39;{&quot;</span><span class="err">ac</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="s2">&quot;:&quot;</span><span class="err">progress</span><span class="s2">&quot;,&quot;</span><span class="err">progress</span><span class="s2">&quot;:0.8367346938775...nue&quot;</span><span class="p">,</span><span class="nt">&quot;strength&quot;</span><span class="p">:</span><span class="s2">&quot;Fast&quot;</span><span class="p">}</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="mi">101</span><span class="w"> </span><span class="err">by</span><span class="kc">tes</span><span class="p">]</span>
+<span class="err">DEBUG</span><span class="p">:</span><span class="err">websocke</span><span class="kc">ts</span><span class="err">.clie</span><span class="kc">nt</span><span class="p">:</span><span class="err">&lt;</span><span class="w"> </span><span class="err">TEXT</span><span class="w"> </span><span class="err">&#39;</span><span class="p">{</span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="s2">&quot;progress&quot;</span><span class="p">,</span><span class="nt">&quot;progress&quot;</span><span class="p">:</span><span class="mf">0.9387755102040...</span><span class="kc">nue</span><span class="s2">&quot;,&quot;</span><span class="err">s</span><span class="kc">tren</span><span class="err">g</span><span class="kc">t</span><span class="err">h</span><span class="s2">&quot;:&quot;</span><span class="err">Fas</span><span class="kc">t</span><span class="s2">&quot;}&#39; [101 bytes]</span>
+<span class="s2">DEBUG:websockets.client:&lt; TEXT &#39;{&quot;</span><span class="err">ac</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="s2">&quot;:&quot;</span><span class="err">progress</span><span class="s2">&quot;,&quot;</span><span class="err">progress</span><span class="s2">&quot;:0.9999,&quot;</span><span class="err">e</span><span class="kc">n</span><span class="err">gi</span><span class="kc">ne</span><span class="err">T...</span><span class="kc">nue</span><span class="s2">&quot;,&quot;</span><span class="err">s</span><span class="kc">tren</span><span class="err">g</span><span class="kc">t</span><span class="err">h</span><span class="s2">&quot;:&quot;</span><span class="err">Fas</span><span class="kc">t</span><span class="s2">&quot;}&#39; [89 bytes]</span>
+<span class="s2">DEBUG:websockets.client:&lt; TEXT &#39;{&quot;</span><span class="err">ac</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="s2">&quot;:&quot;</span><span class="err">a</span><span class="kc">nal</span><span class="err">yzeGame</span><span class="s2">&quot;,&quot;</span><span class="err">da</span><span class="kc">ta</span><span class="s2">&quot;:{&quot;</span><span class="err">s</span><span class="kc">tart</span><span class="err">i</span><span class="kc">n</span><span class="err">gFe</span><span class="kc">n</span><span class="s2">&quot;:&quot;</span><span class="err">...</span><span class="p">},</span><span class="nt">&quot;userId&quot;</span><span class="p">:</span><span class="err">xxx</span><span class="p">}}}}</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="mi">175818</span><span class="w"> </span><span class="err">by</span><span class="kc">tes</span><span class="p">]</span>
+<span class="err">DEBUG</span><span class="p">:</span><span class="err">websocke</span><span class="kc">ts</span><span class="err">.clie</span><span class="kc">nt</span><span class="p">:</span><span class="err">&lt;</span><span class="w"> </span><span class="err">TEXT</span><span class="w"> </span><span class="err">&#39;</span><span class="p">{</span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="s2">&quot;done&quot;</span><span class="p">}</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="mi">17</span><span class="w"> </span><span class="err">by</span><span class="kc">tes</span><span class="p">]</span>
+</code></pre></div>
+
+<p>Among the information available&nbsp;are:</p>
+<ul>
+<li>Game shape (&#8220;arc&#8221;) such as throwaway, sharp, sudden, balanced,&nbsp;wild&#8230;</li>
+<li>Coach&#8217;s explanations if you&#8217;re a Diamond&nbsp;member.</li>
+<li>List of blunders, mistakes, inaccuracies and so&nbsp;on.</li>
+<li>Principal variations for each&nbsp;move.</li>
+<li>Pieces stats (how many times each player moved each&nbsp;piece).</li>
+<li>Per piece <span class="caps">CAPS</span>!.</li>
+<li><span class="caps">CAPS</span> for the game&nbsp;stages.</li>
+<li>Outcome prediction (white, black or&nbsp;draw)!</li>
+<li>Themes: pins, forks, and so&nbsp;on.</li>
+</ul>
+<p>Excerpt:</p>
+<div class="codehilite"><pre><span></span><code><span class="w">                </span><span class="nt">&quot;threat_evals&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">                </span><span class="nt">&quot;suggestedMove&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;playedMove&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;nullMove&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;bestMove&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;speech&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="nt">&quot;sentence&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                                </span><span class="s2">&quot;Opening with the King&#39;s pawn controls the center and opens up the light-squared bishop and queen, often leading to sharp games.&quot;</span>
+<span class="w">                            </span><span class="p">],</span>
+<span class="w">                            </span><span class="nt">&quot;arrowsSquaresStringIndex&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span>
+<span class="w">                            </span><span class="nt">&quot;arrows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">                            </span><span class="nt">&quot;squares&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">],</span>
+<span class="w">                    </span><span class="nt">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.16</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;depth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">40</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;mateIn&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;moveLan&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e2e4&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;eval&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">&quot;cp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;pv&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</code></pre></div>
+
+<h2 id="technical-implementation">Technical&nbsp;Implementation</h2>
+<p>The core of the implementation relies on asynchronous websocket communication. This allows for efficient handling of multiple game analyses concurrently. The script utilizes Python&#8217;s <code>asyncio</code> and <code>websockets</code> libraries to achieve&nbsp;this.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">environ</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">websockets</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">chessdotcom</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">session</span><span class="p">()</span>
+
+<span class="n">proxy</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;http&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8080&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8080&quot;</span>
+<span class="p">}</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">session</span><span class="p">()</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">analyze_game</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">gameId</span><span class="p">,</span> <span class="n">userColor</span><span class="p">,</span> <span class="n">pgn</span><span class="p">):</span>
+    <span class="n">effective_elo</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">websocket_url</span> <span class="o">=</span> <span class="s2">&quot;wss://analysis.chess.com/&quot;</span>
+
+    <span class="n">message</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;gameAnalysis&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;game&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;pgn&quot;</span><span class="p">:</span> <span class="n">pgn</span><span class="p">},</span>
+        <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;caps2&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span>
+            <span class="s2">&quot;engineType&quot;</span><span class="p">:</span> <span class="s2">&quot;stockfish16 nnue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;gameId&quot;</span><span class="p">:</span> <span class="n">gameId</span><span class="p">,</span>
+                <span class="s2">&quot;gameType&quot;</span><span class="p">:</span> <span class="s2">&quot;live&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="n">token</span><span class="p">,</span>
+                <span class="s2">&quot;client&quot;</span><span class="p">:</span> <span class="s2">&quot;web&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;userTimeZone&quot;</span><span class="p">:</span> <span class="s2">&quot;Europe/Berlin&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;strength&quot;</span><span class="p">:</span> <span class="s2">&quot;Fast&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tep&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;ceeDebug&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;classificationv3&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;userColor&quot;</span><span class="p">:</span> <span class="n">userColor</span><span class="p">,</span>
+                <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;en_US&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;speechv3&quot;</span><span class="p">:</span> <span class="kc">True</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">async</span> <span class="k">with</span> <span class="n">websockets</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">websocket_url</span><span class="p">,</span> <span class="n">extra_headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Origin&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.chess.com&quot;</span><span class="p">})</span> <span class="k">as</span> <span class="n">websocket</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Message sent&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">parsed_response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s1">&#39;action&#39;</span> <span class="ow">in</span> <span class="n">parsed_response</span> <span class="ow">and</span> <span class="n">parsed_response</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;analyzeGame&#39;</span><span class="p">:</span>
+                        <span class="n">report_card</span> <span class="o">=</span> <span class="n">parsed_response</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;reportCard&#39;</span><span class="p">]</span>
+                        <span class="n">effective_elo</span> <span class="o">=</span> <span class="n">report_card</span><span class="p">[</span><span class="n">userColor</span><span class="p">][</span><span class="s1">&#39;effectiveElo&#39;</span><span class="p">]</span>
+                        <span class="k">return</span> <span class="n">effective_elo</span>
+                <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+        <span class="k">except</span> <span class="n">websockets</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionClosed</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;WebSocket connection closed&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">effective_elo</span>
+
+
+<span class="k">def</span> <span class="nf">get_analysis_token</span><span class="p">(</span><span class="n">game_id</span><span class="p">):</span>
+
+    <span class="n">burp0_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://www.chess.com:443/callback/auth/service/analysis?game_id=</span><span class="si">{</span><span class="n">game_id</span><span class="si">}</span><span class="s2">&amp;game_type=live&quot;</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">burp0_url</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;token&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">get_latest_games</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+
+    <span class="n">contact_me_at</span> <span class="o">=</span> <span class="s2">&quot;Contact me at xxx&quot;</span>
+    <span class="n">contact_me_at</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;EMAIL&quot;</span><span class="p">))</span>
+    <span class="n">chessdotcom</span><span class="o">.</span><span class="n">Client</span><span class="o">.</span><span class="n">request_config</span><span class="p">[</span><span class="s2">&quot;headers&quot;</span><span class="p">][</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contact_me_at</span>
+
+    <span class="n">current_year</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">year</span>
+    <span class="n">current_month</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">month</span>
+    <span class="n">games</span> <span class="o">=</span> <span class="n">chessdotcom</span><span class="o">.</span><span class="n">get_player_games_by_month</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">current_year</span><span class="p">,</span> <span class="n">current_month</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">games</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;games&#39;</span><span class="p">]</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">analyze_games</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">games</span><span class="p">):</span>
+    <span class="n">total_elo</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">analyzed_games</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">game</span> <span class="ow">in</span> <span class="n">games</span><span class="p">[:</span><span class="mi">100</span><span class="p">]:</span>
+        <span class="n">game_id</span> <span class="o">=</span> <span class="n">game</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">user_color</span> <span class="o">=</span> <span class="s2">&quot;white&quot;</span> <span class="k">if</span> <span class="n">game</span><span class="p">[</span><span class="s1">&#39;white&#39;</span><span class="p">][</span><span class="s1">&#39;username&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">username</span> <span class="k">else</span> <span class="s2">&quot;black&quot;</span>
+
+        <span class="n">token</span> <span class="o">=</span> <span class="n">get_analysis_token</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analysis token:  </span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">pgn</span> <span class="o">=</span> <span class="n">game</span><span class="p">[</span><span class="s1">&#39;pgn&#39;</span><span class="p">]</span>
+
+        <span class="n">effective_elo</span> <span class="o">=</span> <span class="k">await</span> <span class="n">analyze_game</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">game_id</span><span class="p">,</span> <span class="n">user_color</span><span class="p">,</span> <span class="n">pgn</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">effective_elo</span><span class="p">:</span>
+            <span class="n">total_elo</span> <span class="o">+=</span> <span class="n">effective_elo</span>
+            <span class="n">analyzed_games</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game </span><span class="si">{</span><span class="n">game_id</span><span class="si">}</span><span class="s2"> analyzed. Effective Elo: </span><span class="si">{</span><span class="n">effective_elo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">analyzed_games</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">average_elo</span> <span class="o">=</span> <span class="n">total_elo</span> <span class="o">/</span> <span class="n">analyzed_games</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average Effective Elo over </span><span class="si">{</span><span class="n">analyzed_games</span><span class="si">}</span><span class="s2"> games: </span><span class="si">{</span><span class="n">average_elo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No games were successfully analyzed.&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">do_login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+    <span class="n">cookies</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: exercise left to the reader</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">cookies</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+    <span class="n">username</span> <span class="o">=</span> <span class="s2">&quot;volodjah&quot;</span>
+    <span class="n">login</span> <span class="o">=</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CHESSCOM_LOGIN&quot;</span><span class="p">)</span>
+    <span class="n">password</span> <span class="o">=</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CHESSCOM_PASSWORD&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">login</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">password</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;EMAIL&quot;</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Please set the CHESSCOM_LOGIN, CHESSCOM_PASSWORD and EMAIL environment variables.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">cookies</span> <span class="o">=</span> <span class="n">selenium_login</span><span class="p">(</span><span class="n">login</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Cookies: &quot;</span><span class="p">,</span> <span class="n">cookies</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">cookie</span> <span class="ow">in</span> <span class="n">cookies</span><span class="p">:</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cookie</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">cookie</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">],</span> <span class="n">domain</span><span class="o">=</span><span class="n">cookie</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">])</span>
+
+    <span class="n">games</span> <span class="o">=</span> <span class="n">get_latest_games</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">analyze_games</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">games</span><span class="p">))</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+
+<h2 id="data-analysis">Data&nbsp;Analysis</h2>
+<p>The script calculates the mean effective Elo over a set of analyzed games. This provides a quantitative measure of recent performance that we can then plot to provide a little bit of insights beyond traditional Elo&nbsp;ratings.</p>
+<p><a class="mybox" href="/images/historical_effective_elo.png" title="Example of Effective Elo as a time series"><img alt="Example of Effective Elo as a time series" src="/images/historical_effective_elo.png" width="600px"></a></p>
+<h2 id="results">Results</h2>
+<p>Preliminary testing shows successful extraction of effective Elo ratings from individual games. Further statistical analysis of these results could yield interesting patterns in performance fluctuations. <em>Chess.c*om</em>&#8216;s Insights has done some work in this direction but they didn&#8217;t account for imbalances in the&nbsp;data.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>The current implementation is limited by the user&#8217;s membership level. However leveraging this data opens up quite a few&nbsp;possibilities:</p>
+<ol>
+<li>Developing a time-series analysis of effective Elo&nbsp;trends.</li>
+<li>Correlation study of move/game performance against various&nbsp;factors.</li>
+<li>Extract features / metrics for chess&nbsp;coaches.</li>
+</ol>
+	</div>
+
+	<div id="related-articles">
+		<a href="/angr-introspection-2024.html" id="prev-neighbour">angr for real-world use cases &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com">Pelican</a> (<a href="https://github.com/iKevinY/pneumatic">Pneumatic Theme</a>) and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>
