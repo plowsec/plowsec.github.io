@@ -146,7 +146,7 @@ StdDev:&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;27&lt;/span&gt;
 &lt;li&gt;Practical responses to common moves below grandmaster&amp;nbsp;level&lt;/li&gt;
 &lt;li&gt;How to punish&amp;nbsp;inaccuracies&lt;/li&gt;
 &lt;li&gt;Real game examples from 800 to&amp;nbsp;2300&lt;/li&gt;
-&lt;li&gt;Learn moves from a player that matches your playing&amp;nbsp;style.&lt;/li&gt;
+&lt;li&gt;Learn moves from a player that matches our playing&amp;nbsp;style.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id="code"&gt;Code&lt;/h2&gt;
 &lt;p&gt;The complete script is shown&amp;nbsp;below.&lt;/p&gt;
@@ -422,10 +422,10 @@ StdDev:&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;27&lt;/span&gt;
 
     &lt;span class="n"&gt;args&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 
-    &lt;span class="n"&gt;Client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request_config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;headers&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;User-Agent&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
-        &lt;span class="s2"&gt;&amp;quot;Chess Repertoire Builder v1.0 &amp;quot;&lt;/span&gt;
-        &lt;span class="s2"&gt;&amp;quot;Contact me at volodjah@proton.me&amp;quot;&lt;/span&gt;
-    &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;Client.request_config[&amp;quot;headers&amp;quot;][&amp;quot;User-Agent&amp;quot;] = (&lt;/span&gt;
+&lt;span class="sd"&gt;        &amp;quot;xxx &amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;        &amp;quot;xxx&lt;/span&gt;
+&lt;span class="sd"&gt;    )&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
 
     &lt;span class="n"&gt;builder&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;RepertoireBuilder&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;username&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;color&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max_moves&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cache_dir&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
     &lt;span class="n"&gt;builder&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;build_repertoire&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
