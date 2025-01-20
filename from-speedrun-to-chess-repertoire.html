@@ -151,7 +151,7 @@ Unique<span class="w"> </span>lines<span class="w"> </span><span class="k">in</s
 <li>Better alternatives if the move wasn&#8217;t&nbsp;optimal</li>
 </ul>
 <h3 id="side-quest-1">Side quest&nbsp;1</h3>
-<p>For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. Here is an overview (made them unique to have a quick oerview of the different&nbsp;scores)</p>
+<p>For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. I used <code>uniq</code> to aggregate them and have a quick overview of the different&nbsp;scores:</p>
 <div class="codehilite"><pre><span></span><code>grep<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;CPL: [0-9.]*&quot;</span><span class="w"> </span>output.pgn<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">&#39; &#39;</span><span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-nr<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w">                                                                                                                                                  </span>
 <span class="m">425</span>.0
 <span class="m">276</span>.0

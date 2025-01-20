@@ -83,7 +83,7 @@ Unique&lt;span class="w"&gt; &lt;/span&gt;lines&lt;span class="w"&gt; &lt;/span&
 &lt;li&gt;Better alternatives if the move wasn&amp;#8217;t&amp;nbsp;optimal&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id="side-quest-1"&gt;Side quest&amp;nbsp;1&lt;/h3&gt;
-&lt;p&gt;For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. Here is an overview (made them unique to have a quick oerview of the different&amp;nbsp;scores)&lt;/p&gt;
+&lt;p&gt;For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. I used &lt;code&gt;uniq&lt;/code&gt; to aggregate them and have a quick overview of the different&amp;nbsp;scores:&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;grep&lt;span class="w"&gt; &lt;/span&gt;-o&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;CPL: [0-9.]*&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;output.pgn&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;cut&lt;span class="w"&gt; &lt;/span&gt;-d&lt;span class="s1"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;-f2&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;sort&lt;span class="w"&gt; &lt;/span&gt;-nr&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;uniq&lt;span class="w"&gt;                                                                                                                                                  &lt;/span&gt;
 &lt;span class="m"&gt;425&lt;/span&gt;.0
 &lt;span class="m"&gt;276&lt;/span&gt;.0
