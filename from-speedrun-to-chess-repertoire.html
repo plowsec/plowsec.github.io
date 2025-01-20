@@ -150,6 +150,11 @@ Unique<span class="w"> </span>lines<span class="w"> </span><span class="k">in</s
 <li>Centipawn&nbsp;loss</li>
 <li>Better alternatives if the move wasn&#8217;t&nbsp;optimal</li>
 </ul>
+<p>In total, I got 106 lines ready to be memorized. The usefulness of memorizing 106 lines 15 moves deep is questionable, but hey everything in the script is configurable. To improve it, it&#8217;s probably more useful to run intermediate&nbsp;steps:</p>
+<ol>
+<li>Analyze your own games and find out after which move number, in average, you&#8217;re starting to loose in your favorite&nbsp;opening.</li>
+<li>Build a repertoire this move number deep and only increase when you&#8217;re familiar enough with&nbsp;it.</li>
+</ol>
 <h3 id="side-quest-1">Side quest&nbsp;1</h3>
 <p>For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. I used <code>uniq</code> to aggregate them and have a quick overview of the different&nbsp;scores:</p>
 <div class="codehilite"><pre><span></span><code>grep<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;CPL: [0-9.]*&quot;</span><span class="w"> </span>output.pgn<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">&#39; &#39;</span><span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-nr<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w">                                                                                                                                                  </span>
