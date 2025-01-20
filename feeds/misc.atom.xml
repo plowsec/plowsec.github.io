@@ -41,11 +41,13 @@
 &lt;li&gt;Handle move&amp;nbsp;conflicts&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id="technical-implementation"&gt;Technical&amp;nbsp;Implementation&lt;/h2&gt;
-&lt;p&gt;The script takes a username and color as input. For each game:
-* Check if the target player played target color
-* Extract moves up to move 15 (this can be configured)
-* Run engine analysis on the player&amp;#8217;s moves
-* Store &lt;span class="caps"&gt;CPL&lt;/span&gt; (centipawn loss) and better moves if&amp;nbsp;any&lt;/p&gt;
+&lt;p&gt;The script takes a username and color as input. For each&amp;nbsp;game:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Check if the target player played target&amp;nbsp;color&lt;/li&gt;
+&lt;li&gt;Extract moves up to move 15 (this can be&amp;nbsp;configured)&lt;/li&gt;
+&lt;li&gt;Run engine analysis on the player&amp;#8217;s&amp;nbsp;moves&lt;/li&gt;
+&lt;li&gt;Store &lt;span class="caps"&gt;CPL&lt;/span&gt; (centipawn loss) and better moves if&amp;nbsp;any&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;Example of analysis&amp;nbsp;output:&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;Proc&lt;/span&gt;&lt;span class="nv"&gt;essed&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;182&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;games&lt;/span&gt;
 &lt;span class="nf"&gt;Found&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;106&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;Sicilian&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;games&lt;/span&gt;
@@ -74,10 +76,12 @@ Unique&lt;span class="w"&gt; &lt;/span&gt;lines&lt;span class="w"&gt; &lt;/span&
 
 &lt;p&gt;Since it took 13 minutes to analyze the 360 games played by Aman and I didn&amp;#8217;t want to wait again, I decided to ask Claude to write a parser for the resulting &lt;span class="caps"&gt;PGN&lt;/span&gt; and filter out games where Aman did not play &lt;span class="caps"&gt;C7C5&lt;/span&gt; (a quick heuristic to find the Taimanov games). However, for more realistic scenarios, you might want to write a proper filter to classify openings, since many games can start with &lt;span class="caps"&gt;C7C5&lt;/span&gt; and not be a Sicilian Taimanov at&amp;nbsp;all.&lt;/p&gt;
 &lt;h2 id="results"&gt;Results&lt;/h2&gt;
-&lt;p&gt;For each position, we get:
-* The move played
-* Centipawn loss
-* Better alternatives if the move wasn&amp;#8217;t&amp;nbsp;optimal&lt;/p&gt;
+&lt;p&gt;For each position, we&amp;nbsp;get:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The move&amp;nbsp;played&lt;/li&gt;
+&lt;li&gt;Centipawn&amp;nbsp;loss&lt;/li&gt;
+&lt;li&gt;Better alternatives if the move wasn&amp;#8217;t&amp;nbsp;optimal&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h3 id="side-quest-1"&gt;Side quest&amp;nbsp;1&lt;/h3&gt;
 &lt;p&gt;For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. Here is an overview (made them unique to have a quick oerview of the different&amp;nbsp;scores)&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;grep&lt;span class="w"&gt; &lt;/span&gt;-o&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;CPL: [0-9.]*&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;output.pgn&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;cut&lt;span class="w"&gt; &lt;/span&gt;-d&lt;span class="s1"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;-f2&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;sort&lt;span class="w"&gt; &lt;/span&gt;-nr&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;uniq&lt;span class="w"&gt;                                                                                                                                                  &lt;/span&gt;
@@ -137,11 +141,13 @@ StdDev:&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;27&lt;/span&gt;
 &lt;p&gt;Now that I see it like that, I actually remember this game and the chuckle I had to Aman&amp;#8217;s reactions. I had to find it on YouTube again. Aman makes the mistake &lt;a href="https://youtu.be/GNQUFFiYBRA?si=5zEpCeyBxH5zK8e5&amp;amp;t=791"&gt;here&lt;/a&gt; and then discusses it in more detail after the game, including his surprise at the engine&amp;#8217;s &lt;a href="https://youtu.be/GNQUFFiYBRA?si=ogG0hrYw1kvPBHHM&amp;amp;t=1032"&gt;funny solution&lt;/a&gt;: &amp;#8220;The old engine move heh&amp;#8230;it&amp;#8217;s kind of&amp;nbsp;gross&amp;#8221;.&lt;/p&gt;
 &lt;p&gt;Before the move Qc6, the evaluation was +2.61 for Aman, and after it was 1.75 in favor of his opponent. This shows our local game analysis is reliable and matches the conclusion of the game review. Now, in the game, Aman managed to find a nice move and equalize no long after, before winning the&amp;nbsp;game.&lt;/p&gt;
 &lt;h2 id="conclusion"&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;This approach bridges the gap between theory and practice. Instead of memorizing perfect lines, we learn:
-* Practical responses to common moves below grandmaster level
-* How to punish inaccuracies
-* Real game examples from 800 to 2300
-* Learn moves from a player that matches your playing&amp;nbsp;style.&lt;/p&gt;
+&lt;p&gt;This approach bridges the gap between theory and practice. Instead of memorizing perfect lines, we&amp;nbsp;learn:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Practical responses to common moves below grandmaster&amp;nbsp;level&lt;/li&gt;
+&lt;li&gt;How to punish&amp;nbsp;inaccuracies&lt;/li&gt;
+&lt;li&gt;Real game examples from 800 to&amp;nbsp;2300&lt;/li&gt;
+&lt;li&gt;Learn moves from a player that matches your playing&amp;nbsp;style.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2 id="code"&gt;Code&lt;/h2&gt;
 &lt;p&gt;The complete script is shown&amp;nbsp;below.&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;time&lt;/span&gt;

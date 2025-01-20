@@ -109,11 +109,13 @@
 <li>Handle move&nbsp;conflicts</li>
 </ol>
 <h2 id="technical-implementation">Technical&nbsp;Implementation</h2>
-<p>The script takes a username and color as input. For each game:
-* Check if the target player played target color
-* Extract moves up to move 15 (this can be configured)
-* Run engine analysis on the player&#8217;s moves
-* Store <span class="caps">CPL</span> (centipawn loss) and better moves if&nbsp;any</p>
+<p>The script takes a username and color as input. For each&nbsp;game:</p>
+<ul>
+<li>Check if the target player played target&nbsp;color</li>
+<li>Extract moves up to move 15 (this can be&nbsp;configured)</li>
+<li>Run engine analysis on the player&#8217;s&nbsp;moves</li>
+<li>Store <span class="caps">CPL</span> (centipawn loss) and better moves if&nbsp;any</li>
+</ul>
 <p>Example of analysis&nbsp;output:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">Proc</span><span class="nv">essed</span><span class="w"> </span><span class="mi">182</span><span class="w"> </span><span class="nv">games</span>
 <span class="nf">Found</span><span class="w"> </span><span class="mi">106</span><span class="w"> </span><span class="nv">Sicilian</span><span class="w"> </span><span class="nv">games</span>
@@ -142,10 +144,12 @@ Unique<span class="w"> </span>lines<span class="w"> </span><span class="k">in</s
 
 <p>Since it took 13 minutes to analyze the 360 games played by Aman and I didn&#8217;t want to wait again, I decided to ask Claude to write a parser for the resulting <span class="caps">PGN</span> and filter out games where Aman did not play <span class="caps">C7C5</span> (a quick heuristic to find the Taimanov games). However, for more realistic scenarios, you might want to write a proper filter to classify openings, since many games can start with <span class="caps">C7C5</span> and not be a Sicilian Taimanov at&nbsp;all.</p>
 <h2 id="results">Results</h2>
-<p>For each position, we get:
-* The move played
-* Centipawn loss
-* Better alternatives if the move wasn&#8217;t&nbsp;optimal</p>
+<p>For each position, we&nbsp;get:</p>
+<ul>
+<li>The move&nbsp;played</li>
+<li>Centipawn&nbsp;loss</li>
+<li>Better alternatives if the move wasn&#8217;t&nbsp;optimal</li>
+</ul>
 <h3 id="side-quest-1">Side quest&nbsp;1</h3>
 <p>For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. Here is an overview (made them unique to have a quick oerview of the different&nbsp;scores)</p>
 <div class="codehilite"><pre><span></span><code>grep<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;CPL: [0-9.]*&quot;</span><span class="w"> </span>output.pgn<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">&#39; &#39;</span><span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-nr<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w">                                                                                                                                                  </span>
@@ -205,11 +209,13 @@ StdDev:<span class="w"> </span><span class="m">27</span>.8667
 <p>Now that I see it like that, I actually remember this game and the chuckle I had to Aman&#8217;s reactions. I had to find it on YouTube again. Aman makes the mistake <a href="https://youtu.be/GNQUFFiYBRA?si=5zEpCeyBxH5zK8e5&amp;t=791">here</a> and then discusses it in more detail after the game, including his surprise at the engine&#8217;s <a href="https://youtu.be/GNQUFFiYBRA?si=ogG0hrYw1kvPBHHM&amp;t=1032">funny solution</a>: &#8220;The old engine move heh&#8230;it&#8217;s kind of&nbsp;gross&#8221;.</p>
 <p>Before the move Qc6, the evaluation was +2.61 for Aman, and after it was 1.75 in favor of his opponent. This shows our local game analysis is reliable and matches the conclusion of the game review. Now, in the game, Aman managed to find a nice move and equalize no long after, before winning the&nbsp;game.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>This approach bridges the gap between theory and practice. Instead of memorizing perfect lines, we learn:
-* Practical responses to common moves below grandmaster level
-* How to punish inaccuracies
-* Real game examples from 800 to 2300
-* Learn moves from a player that matches your playing&nbsp;style.</p>
+<p>This approach bridges the gap between theory and practice. Instead of memorizing perfect lines, we&nbsp;learn:</p>
+<ul>
+<li>Practical responses to common moves below grandmaster&nbsp;level</li>
+<li>How to punish&nbsp;inaccuracies</li>
+<li>Real game examples from 800 to&nbsp;2300</li>
+<li>Learn moves from a player that matches your playing&nbsp;style.</li>
+</ul>
 <h2 id="code">Code</h2>
 <p>The complete script is shown&nbsp;below.</p>
 <div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">time</span>
