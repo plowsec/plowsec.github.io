@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Learning Chess Openings from GM Speedruns | volodya</title>
+	<meta name="description" content="Building a Chess repertoire from a GM’s speedrun">
+	<meta name="author" content="plowsec">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="@volodiyah">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="@volodiyah">
+	<meta property="og:title" content="Learning Chess Openings from GM Speedruns">
+	<meta property="og:description" content="Building a Chess repertoire from a GM’s speedrun">
+	<meta property="og:image" content="/images/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/from-speedrun-to-chess-repertoire.html">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css?635a1f3c" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/images/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FF8000">
+	<meta name="google-site-verification" content="9iiuP1IGbCXy85riRmrFC_68Vh3CldZM2tvAfxyuXT0" />
+	<meta name="msapplication-TileColor" content="#FF8000">
+	<meta name="msapplication-TileImage" content="/images/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/images/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/images/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/images/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/images/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/images/icons/avatar.png"></a>
+			<div id="name"><a href="/">volodya</a></div>
+			<div id="bio">Security Engineer interested in Program Analysis, (de)obfuscation and antivirus engines. Stripped binaries || GTFO.</div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>
+			</div>
+
+			<div id="social">
+				<a href="mailto:united.marshmallow(at)gmail.com" title="Email (united.marshmallow(at)gmail.com)" class="icon fa fa-envelope"></a>
+				<a href="https://twitter.com/volodiyah" title="Twitter" class="icon fa fa-twitter"></a>
+				<a href="https://github.com/plowsec" title="GitHub" class="icon fa fa-github"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/from-speedrun-to-chess-repertoire.html" title="Permalink to Learning Chess Openings from GM Speedruns">Learning Chess Openings from <span class="caps">GM</span>&nbsp;Speedruns</a></h1>
+	<time class="date" datetime="2025-01-20 00:00:00+01:00">Mon 20 January 2025</time>
+	<div class="content">
+		<div class="toc"><span class="toctitle">Table of contents:</span><ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#methodology">Methodology</a></li>
+<li><a href="#technical-implementation">Technical&nbsp;Implementation</a></li>
+<li><a href="#results">Results</a><ul>
+<li><a href="#side-quest-1">Side quest&nbsp;1</a></li>
+<li><a href="#side-quest-2">Side quest&nbsp;2</a></li>
+</ul>
+</li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#code">Code</a></li>
+</ul>
+</div>
+<h2 id="introduction">Introduction</h2>
+<p>Have you ever spent hours memorizing chess opening lines, only to fall apart when your opponent deviates from the book? You&#8217;re not&nbsp;alone.</p>
+<p>Chess books teach openings assuming perfect play from both sides. Reality is different, and chess books are boring anyway. Recently, I&#8217;ve discovered GMs such as Hansen and Aman (chessbrah) doing <a href="https://www.youtube.com/watch?v=rCZrddCQWY8&amp;list=PLUjxDD7HNNTjVEZ_1I8E28uav9t_ltDKX">speedruns</a> on <em>chess.com</em> and streaming their games to <em>Twitch</em> / <em>YouTube</em>. The cool thing is they show how to handle all kinds of responses, from beginner mistakes to decent moves, across different rating levels&nbsp;(400-2300).</p>
+<p>This is valuable data we can extract, and then use to practice and accelerate our learning&nbsp;rate. </p>
+<p>Now you might be wondering two&nbsp;things:</p>
+<ol>
+<li>What&#8217;s the point of checking out these moves instead of just using the Game&nbsp;Review?</li>
+<li>How do you practice from a <span class="caps">PGN</span> such as this&nbsp;anyway?</li>
+</ol>
+<p>And my answers&nbsp;are:</p>
+<ol>
+<li>These are human moves with understandable ideas behind&nbsp;them.</li>
+<li>Either import it into a Lichess study, or stay tuned for my mobile app that is coming out (soon^tm)&nbsp;:D.</li>
+</ol>
+<p>Indeed, the moves we&#8217;ll be practicing against will have a higher likelihood of being relevant to our games since they are moves played intuitively by players at our&nbsp;level. </p>
+<p>Besides, playing the &#8220;best&#8221; move isn&#8217;t worth much if you don&#8217;t understand it: depending on your Elo, you&#8217;ll probably end up in a sharp position with only 1 or 2 good moves to keep the advantage, and you may not have the skill / time to find&nbsp;it.</p>
+<p>So, the goal of this blog post is to show how I downloaded all the games from the account <a href="https://www.chess.com/member/vonamiat">vonomiat</a> (<span class="caps">GM</span> Aman Hambleton&#8217;s speedrun account for the Taimanov Sicilian), filtered for games where he played as black and actually played the Taimanov. In addition, I&#8217;ve analyzed the first 15 moves with <em>stockfish</em> to check if Aman actually played a good move. The reason is that I want to avoid building a repertoire with mistakes in it. While Aman is perfectly able to win against a 1500 Elo player down a rook, I am&nbsp;not.</p>
+<h2 id="methodology">Methodology</h2>
+<ol>
+<li>Download games from chess.com Public <span class="caps">API</span></li>
+<li>Cache them to disk in case I have to fix stuff in my script and re-run&nbsp;it.</li>
+<li>Filter games by&nbsp;opening</li>
+<li>Run Stockfish analysis on the player&#8217;s&nbsp;moves</li>
+<li>Build a repertoire in <span class="caps">PGN</span>&nbsp;format</li>
+<li>Handle move&nbsp;conflicts</li>
+</ol>
+<h2 id="technical-implementation">Technical&nbsp;Implementation</h2>
+<p>The script takes a username and color as input. For each game:
+- Check if the target player played target color
+- Extract moves up to move 15 (this can be configured)
+- Run engine analysis on the player&#8217;s moves
+- Store <span class="caps">CPL</span> (centipawn loss) and better moves if&nbsp;any</p>
+<p>Example of analysis&nbsp;output:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">Proc</span><span class="nv">essed</span><span class="w"> </span><span class="mi">182</span><span class="w"> </span><span class="nv">games</span>
+<span class="nf">Found</span><span class="w"> </span><span class="mi">106</span><span class="w"> </span><span class="nv">Sicilian</span><span class="w"> </span><span class="nv">games</span>
+
+<span class="nf">Non</span><span class="o">-</span><span class="nv">Sicilian</span><span class="w"> </span><span class="nv">games</span><span class="w"> </span><span class="p">(</span><span class="mi">74</span><span class="p">)</span>
+
+<span class="nl">PGN:</span>
+<span class="err">1</span><span class="nf">.</span><span class="w"> </span><span class="nv">e2e4</span><span class="w"> </span><span class="nv">c7c5</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="nv">Better</span><span class="w"> </span><span class="nv">was</span><span class="w"> </span><span class="nv">e7e5</span><span class="err">}</span><span class="w"> </span><span class="mi">2</span><span class="nv">.</span><span class="w"> </span><span class="nv">g1f3</span><span class="w"> </span><span class="nv">e7e6</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span><span class="err">}</span><span class="w"> </span><span class="mi">3</span><span class="nv">.</span><span class="w"> </span><span class="nv">f1c4</span><span class="w"> </span><span class="nv">a7a6</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">14.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="nv">Better</span><span class="w"> </span><span class="nv">was</span><span class="w"> </span><span class="nv">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mi">4</span><span class="nv">.</span><span class="w"> </span><span class="nv">d2d4</span><span class="w"> </span><span class="nv">b7b5</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="mi">5</span><span class="nv">.</span><span class="w"> </span><span class="nv">c4e2</span><span class="w"> </span><span class="nv">c5d4</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">17.0</span><span class="err">}</span><span class="w"> </span><span class="mi">6</span><span class="nv">.</span><span class="w"> </span><span class="nv">d1d4</span><span class="w"> </span><span class="nv">b8c6</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="mi">7</span><span class="nv">.</span><span class="w"> </span><span class="nv">d4d1</span><span class="w"> </span><span class="nv">c8b7</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">3.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="nv">Better</span><span class="w"> </span><span class="nv">was</span><span class="w"> </span><span class="nv">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mi">8</span><span class="nv">.</span><span class="w"> </span><span class="nv">c1g5</span><span class="w"> </span><span class="nv">d8c7</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">32.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="nv">Better</span><span class="w"> </span><span class="nv">was</span><span class="w"> </span><span class="nv">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mi">9</span><span class="nv">.</span><span class="w"> </span><span class="nv">b1d2</span><span class="w"> </span><span class="nv">a8c8</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">41.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="nv">Better</span><span class="w"> </span><span class="nv">was</span><span class="w"> </span><span class="nv">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mi">10</span><span class="nv">.</span><span class="w"> </span><span class="nv">e1g1</span><span class="w"> </span><span class="nv">g8f6</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="mi">11</span><span class="nv">.</span><span class="w"> </span><span class="nv">g2g3</span><span class="w"> </span><span class="nv">f8e7</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="nv">Better</span><span class="w"> </span><span class="nv">was</span><span class="w"> </span><span class="nv">h7h6</span><span class="err">}</span><span class="w"> </span><span class="mi">12</span><span class="nv">.</span><span class="w"> </span><span class="nv">g5f4</span><span class="w"> </span><span class="nv">d7d6</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">18.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="nv">Better</span><span class="w"> </span><span class="nv">was</span><span class="w"> </span><span class="nv">c7d8</span><span class="err">}</span><span class="w"> </span><span class="mi">13</span><span class="nv">.</span><span class="w"> </span><span class="nv">a2a4</span><span class="w"> </span><span class="nv">b5b4</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="mi">14</span><span class="nv">.</span><span class="w"> </span><span class="nv">a4a5</span><span class="w"> </span><span class="nv">e6e5</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">50.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="nv">Better</span><span class="w"> </span><span class="nv">was</span><span class="w"> </span><span class="nv">c6a5</span><span class="err">}</span><span class="w"> </span><span class="mi">15</span><span class="nv">.</span><span class="w"> </span><span class="nv">f4e3</span><span class="w"> </span><span class="nv">c6a5</span><span class="w"> </span><span class="err">{</span><span class="nv">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">4.0</span><span class="err">}</span>
+<span class="nf">...</span><span class="p">(</span><span class="mi">105</span><span class="w"> </span><span class="nv">more</span><span class="w"> </span><span class="nv">lines</span><span class="p">)</span>
+</code></pre></div>
+
+<p>To be honest, I had a brain fart and forgot to filter games before analyzing&nbsp;them:</p>
+<div class="codehilite"><pre><span></span><code>python3<span class="w"> </span>repertoire.py<span class="w"> </span>--username<span class="w"> </span>vonamiat<span class="w"> </span>--color<span class="w"> </span>black<span class="w"> </span>--max-moves<span class="w"> </span><span class="m">15</span><span class="w"> </span>
+
+INFO:root:Loaded<span class="w"> </span><span class="m">360</span><span class="w"> </span>games<span class="w"> </span>from<span class="w"> </span>cache
+Processing<span class="w"> </span>archives:<span class="w"> </span><span class="m">100</span>%<span class="p">|</span>██████████<span class="p">|</span><span class="w"> </span><span class="m">5</span>/5<span class="w"> </span><span class="o">[</span><span class="m">00</span>:03&lt;<span class="m">00</span>:00,<span class="w">  </span><span class="m">1</span>.36it/s<span class="o">]</span>
+Building<span class="w"> </span>repertoire:<span class="w">  </span><span class="m">15</span>%<span class="p">|</span>█▌<span class="w">        </span><span class="p">|</span><span class="w"> </span><span class="m">54</span>/360<span class="w"> </span><span class="o">[</span><span class="m">02</span>:06&lt;<span class="m">15</span>:25,<span class="w">  </span><span class="m">3</span>.02s/it<span class="o">]</span>ERROR:root:Engine<span class="w"> </span>analysis<span class="w"> </span>error:<span class="w"> </span><span class="s1">&#39;pv&#39;</span>
+Building<span class="w"> </span>repertoire:<span class="w">  </span><span class="m">38</span>%<span class="p">|</span>███▊<span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">136</span>/360<span class="w"> </span><span class="o">[</span><span class="m">04</span>:48&lt;<span class="m">09</span>:01,<span class="w">  </span><span class="m">2</span>.42s/it<span class="o">]</span>ERROR:root:Engine<span class="w"> </span>analysis<span class="w"> </span>error:<span class="w"> </span><span class="s1">&#39;pv&#39;</span>
+Building<span class="w"> </span>repertoire:<span class="w">  </span><span class="m">40</span>%<span class="p">|</span>███▉<span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">143</span>/360<span class="w"> </span><span class="o">[</span><span class="m">05</span>:00&lt;<span class="m">06</span>:40,<span class="w">  </span><span class="m">1</span>.85s/it<span class="o">]</span>ERROR:root:Engine<span class="w"> </span>analysis<span class="w"> </span>error:<span class="w"> </span><span class="s1">&#39;pv&#39;</span>
+Building<span class="w"> </span>repertoire:<span class="w">  </span><span class="m">59</span>%<span class="p">|</span>█████▉<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">214</span>/360<span class="w"> </span><span class="o">[</span><span class="m">07</span>:43&lt;<span class="m">05</span>:22,<span class="w">  </span><span class="m">2</span>.21s/it<span class="o">]</span>ERROR:root:Engine<span class="w"> </span>analysis<span class="w"> </span>error:<span class="w"> </span><span class="s1">&#39;pv&#39;</span>
+Building<span class="w"> </span>repertoire:<span class="w"> </span><span class="m">100</span>%<span class="p">|</span>██████████<span class="p">|</span><span class="w"> </span><span class="m">360</span>/360<span class="w"> </span><span class="o">[</span><span class="m">13</span>:26&lt;<span class="m">00</span>:00,<span class="w">  </span><span class="m">2</span>.24s/it<span class="o">]</span>
+
+Unique<span class="w"> </span>lines<span class="w"> </span><span class="k">in</span><span class="w"> </span>repertoire:
+...
+</code></pre></div>
+
+<p>Since it took 13 minutes to analyze the 360 games played by Aman and I didn&#8217;t want to wait again, I decided to ask Claude to write a parser for the resulting <span class="caps">PGN</span> and filter out games where Aman did not play <span class="caps">C7C5</span> (a quick heuristic to find the Taimanov games). However, for more realistic scenarios, you might want to write a proper filter to classify openings, since many games can start with <span class="caps">C7C5</span> and not be a Sicilian Taimanov at&nbsp;all.</p>
+<h2 id="results">Results</h2>
+<p>For each position, we get:
+- The move played
+- Centipawn loss
+- Better alternatives if the move wasn&#8217;t&nbsp;optimal</p>
+<h3 id="side-quest-1">Side quest&nbsp;1</h3>
+<p>For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. Here is an overview (made them unique to have a quick oerview of the different&nbsp;scores)</p>
+<div class="codehilite"><pre><span></span><code>grep<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;CPL: [0-9.]*&quot;</span><span class="w"> </span>output.pgn<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">&#39; &#39;</span><span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-nr<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w">                                                                                                                                                  </span>
+<span class="m">425</span>.0
+<span class="m">276</span>.0
+<span class="m">264</span>.0
+<span class="m">251</span>.0
+<span class="m">228</span>.0
+<span class="m">161</span>.0
+<span class="m">158</span>.0
+<span class="m">154</span>.0
+<span class="m">153</span>.0
+<span class="m">149</span>.0
+<span class="m">138</span>.0
+<span class="m">135</span>.0
+<span class="m">126</span>.0
+<span class="m">122</span>.0
+<span class="m">120</span>.0
+<span class="m">119</span>.0
+<span class="m">115</span>.0
+<span class="m">113</span>.0
+<span class="m">111</span>.0
+<span class="m">110</span>.0
+<span class="m">108</span>.0
+</code></pre></div>
+
+<p>And some more interesting stats&nbsp;below:</p>
+<div class="codehilite"><pre><span></span><code>grep<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;CPL: [0-9.]*&quot;</span><span class="w"> </span>output.pgn<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">&#39; &#39;</span><span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-n<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;                                                                                                                                                   </span>
+<span class="s1">BEGIN { print &quot;CPL Statistics:&quot; }</span>
+<span class="s1">{</span>
+<span class="s1">    sum += $1</span>
+<span class="s1">    sumsq += $1 * $1</span>
+<span class="s1">    values[NR] = $1</span>
+<span class="s1">}</span>
+<span class="s1">END {</span>
+<span class="s1">    print &quot;Count:&quot;, NR</span>
+<span class="s1">    print &quot;Average:&quot;, sum/NR</span>
+<span class="s1">    print &quot;Max:&quot;, values[NR]</span>
+<span class="s1">    print &quot;Min:&quot;, values[1]</span>
+<span class="s1">    print &quot;StdDev:&quot;, sqrt(sumsq/NR - (sum/NR)^2)</span>
+<span class="s1">}&#39;</span>
+CPL<span class="w"> </span>Statistics:
+Count:<span class="w"> </span><span class="m">1545</span>
+Average:<span class="w"> </span><span class="m">15</span>.1676
+Max:<span class="w"> </span><span class="m">425</span>.0
+Min:<span class="w"> </span><span class="m">0</span>.0
+StdDev:<span class="w"> </span><span class="m">27</span>.8667
+</code></pre></div>
+
+<p>An average of 15 <span class="caps">CPL</span> is quite an achievement. That&#8217;s a grandmaster for&nbsp;you! </p>
+<h3 id="side-quest-2">Side quest&nbsp;2</h3>
+<p>I was also curious to analyze the game with the 425 <span class="caps">CPL</span>. It&#8217;s the <a href="https://www.chess.com/game/live/85188165059">following one</a>:</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">e2e4</span><span class="w"> </span><span class="n">c7c5</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">9.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">e7e5</span><span class="err">}</span><span class="w"> </span><span class="mf">2.</span><span class="w"> </span><span class="n">g1f3</span><span class="w"> </span><span class="n">e7e6</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">d7d6</span><span class="err">}</span><span class="w"> </span><span class="mf">3.</span><span class="w"> </span><span class="n">d2d4</span><span class="w"> </span><span class="n">c5d4</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="mf">4.</span><span class="w"> </span><span class="n">f3d4</span><span class="w"> </span><span class="n">b8c6</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">9.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mf">5.</span><span class="w"> </span><span class="n">b1c3</span><span class="w"> </span><span class="n">d8c7</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mf">6.</span><span class="w"> </span><span class="n">c1e3</span><span class="w"> </span><span class="n">a7a6</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="mf">7.</span><span class="w"> </span><span class="n">f1d3</span><span class="w"> </span><span class="n">b7b5</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mf">8.</span><span class="w"> </span><span class="n">a2a3</span><span class="w"> </span><span class="n">c8b7</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">6.0</span><span class="err">}</span><span class="w"> </span><span class="mf">9.</span><span class="w"> </span><span class="n">d1e2</span><span class="w"> </span><span class="n">a8c8</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">24.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">c6e5</span><span class="err">}</span><span class="w"> </span><span class="mf">10.</span><span class="w"> </span><span class="n">e1g1</span><span class="w"> </span><span class="n">c6e5</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">27.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mf">11.</span><span class="w"> </span><span class="n">a1c1</span><span class="w"> </span><span class="n">e5c4</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">3.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">g8f6</span><span class="err">}</span><span class="w"> </span><span class="mf">12.</span><span class="w"> </span><span class="n">d4b5</span><span class="w"> </span><span class="n">a6b5</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">29.0</span><span class="err">}</span><span class="w"> </span><span class="mf">13.</span><span class="w"> </span><span class="n">c3b5</span><span class="w"> </span><span class="n">c7c6</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">425.0</span><span class="err">}</span><span class="w"> </span><span class="err">{</span><span class="n">Better</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">c7e5</span><span class="err">}</span><span class="w"> </span><span class="mf">14.</span><span class="w"> </span><span class="n">b5a7</span><span class="w"> </span><span class="n">c6c7</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="err">}</span><span class="w"> </span><span class="mf">15.</span><span class="w"> </span><span class="n">a7c8</span><span class="w"> </span><span class="n">c4e3</span><span class="w"> </span><span class="err">{</span><span class="n">CPL</span><span class="p">:</span><span class="w"> </span><span class="mf">6.0</span><span class="err">}</span>
+</code></pre></div>
+
+<p><a class="mybox" href="/images/aman_425_cpl.png" title="Stockfish looks down on this move"><img alt="Stockfish looks down on this move" src="/images/aman_425_cpl.png" width="600px"></a></p>
+<p>Now that I see it like that, I actually remember this game and the chuckle I had to Aman&#8217;s reactions. I had to find it on YouTube again. Aman makes the mistake <a href="https://youtu.be/GNQUFFiYBRA?si=5zEpCeyBxH5zK8e5&amp;t=791">here</a> and then discusses it in more detail after the game, including his surprise at the engine&#8217;s <a href="https://youtu.be/GNQUFFiYBRA?si=ogG0hrYw1kvPBHHM&amp;t=1032">funny solution</a>: &#8220;The old engine move heh&#8230;it&#8217;s kind of&nbsp;gross&#8221;.</p>
+<p>Before the move Qc6, the evaluation was +2.61 for Aman, and after it was 1.75 in favor of his opponent. This shows our local game analysis is reliable and matches the conclusion of the game review. Now, in the game, Aman managed to find a nice move and equalize no long after, before winning the&nbsp;game.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This approach bridges the gap between theory and practice. Instead of memorizing perfect lines, we learn:
+* Practical responses to common moves below grandmaster level
+* How to punish inaccuracies
+* Real game examples from 800 to 2300
+* Learn moves from a player that matches your playing&nbsp;style.</p>
+<h2 id="code">Code</h2>
+<p>The complete script is shown&nbsp;below.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">chess.pgn</span>
+<span class="kn">import</span> <span class="nn">chess</span>
+<span class="kn">from</span> <span class="nn">chessdotcom</span> <span class="kn">import</span> <span class="n">get_player_game_archives</span><span class="p">,</span> <span class="n">get_player_games_by_month</span><span class="p">,</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">RepertoireBuilder</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">max_moves</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="s2">&quot;cache&quot;</span><span class="p">,</span> <span class="n">engine_path</span><span class="o">=</span><span class="s2">&quot;/opt/homebrew/bin/stockfish&quot;</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="n">username</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_moves</span> <span class="o">=</span> <span class="n">max_moves</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variations</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">_games.json&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Create cache directory if it doesn&#39;t exist</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine_path</span> <span class="o">=</span> <span class="n">engine_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">depth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">analyze_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">board</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Analyze a position and return best move and evaluation.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">analyse</span><span class="p">(</span><span class="n">board</span><span class="p">,</span> <span class="n">chess</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">Limit</span><span class="p">(</span><span class="n">depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">))</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">white</span><span class="p">()</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">mate_score</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+            <span class="n">best_move</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;pv&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">score</span><span class="p">,</span> <span class="n">best_move</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Engine analysis error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">calculate_centipawn_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">board</span><span class="p">,</span> <span class="n">move_made</span><span class="p">,</span> <span class="n">prev_score</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate centipawn loss for a move.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">prev_score</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># Analyze position after the move</span>
+        <span class="n">board</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">move_made</span><span class="p">)</span>
+        <span class="n">after_score</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_position</span><span class="p">(</span><span class="n">board</span><span class="p">)</span>
+        <span class="n">board</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">after_score</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># Calculate loss based on player&#39;s color</span>
+        <span class="n">is_white</span> <span class="o">=</span> <span class="n">board</span><span class="o">.</span><span class="n">turn</span>
+        <span class="k">if</span> <span class="n">is_white</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">prev_score</span> <span class="o">-</span> <span class="n">after_score</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">after_score</span> <span class="o">-</span> <span class="n">prev_score</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">after_score</span>
+
+    <span class="k">def</span> <span class="nf">process_game</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a single game with engine analysis.&quot;&quot;&quot;</span>
+        <span class="n">pgn</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="n">game</span><span class="p">[</span><span class="s1">&#39;pgn&#39;</span><span class="p">])</span>
+        <span class="n">chess_game</span> <span class="o">=</span> <span class="n">chess</span><span class="o">.</span><span class="n">pgn</span><span class="o">.</span><span class="n">read_game</span><span class="p">(</span><span class="n">pgn</span><span class="p">)</span>
+
+        <span class="c1"># Determine if our player is white or black</span>
+        <span class="n">is_white</span> <span class="o">=</span> <span class="n">game</span><span class="p">[</span><span class="s1">&#39;white&#39;</span><span class="p">][</span><span class="s1">&#39;username&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">is_white</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">==</span> <span class="s1">&#39;black&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">is_white</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">==</span> <span class="s1">&#39;white&#39;</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">board</span> <span class="o">=</span> <span class="n">chess</span><span class="o">.</span><span class="n">Board</span><span class="p">()</span>
+        <span class="n">moves</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">annotations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">prev_score</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">move_num</span><span class="p">,</span> <span class="n">move</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chess_game</span><span class="o">.</span><span class="n">mainline_moves</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">move_num</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_moves</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># Both players&#39; moves</span>
+                <span class="k">break</span>
+
+            <span class="c1"># Only analyze our player&#39;s moves</span>
+            <span class="n">is_our_move</span> <span class="o">=</span> <span class="p">(</span><span class="n">is_white</span> <span class="ow">and</span> <span class="n">board</span><span class="o">.</span><span class="n">turn</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">is_white</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">board</span><span class="o">.</span><span class="n">turn</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">is_our_move</span><span class="p">:</span>
+                <span class="c1"># Analyze position before move</span>
+                <span class="n">curr_score</span><span class="p">,</span> <span class="n">best_move</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_position</span><span class="p">(</span><span class="n">board</span><span class="p">)</span>
+
+                <span class="c1"># Calculate loss</span>
+                <span class="n">loss</span><span class="p">,</span> <span class="n">new_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_centipawn_loss</span><span class="p">(</span><span class="n">board</span><span class="p">,</span> <span class="n">move</span><span class="p">,</span> <span class="n">curr_score</span><span class="p">)</span>
+
+                <span class="n">annotation</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="se">{{</span><span class="s2">CPL: </span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">.1f</span><span class="se">}}</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">if</span> <span class="n">best_move</span> <span class="o">!=</span> <span class="n">move</span><span class="p">:</span>
+                    <span class="n">annotation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="se">{{</span><span class="s2">Better was </span><span class="si">{</span><span class="n">best_move</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+                <span class="n">annotations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">move_num</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">annotation</span><span class="p">))</span>
+
+                <span class="n">prev_score</span> <span class="o">=</span> <span class="n">new_score</span>
+
+            <span class="n">moves</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">move</span><span class="p">)</span>
+            <span class="n">board</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">move</span><span class="p">)</span>
+
+        <span class="c1"># Store the variation with annotations</span>
+        <span class="n">move_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">moves_to_pgn</span><span class="p">(</span><span class="n">moves</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
+        <span class="n">position_key</span> <span class="o">=</span> <span class="n">board</span><span class="o">.</span><span class="n">fen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variations</span><span class="p">[</span><span class="n">position_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;moves&#39;</span><span class="p">:</span> <span class="n">move_str</span><span class="p">,</span>
+            <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">game</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="n">game</span><span class="p">[</span><span class="s1">&#39;end_time&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;eval&#39;</span><span class="p">:</span> <span class="n">prev_score</span>
+        <span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">moves</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">move_str</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load_cached_games</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load games from cache if available.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_file</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">cached_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cached_data</span><span class="p">[</span><span class="s1">&#39;games&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> games from cache&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">cached_data</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading cache: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;last_update&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;games&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;last_update&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;games&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+
+    <span class="k">def</span> <span class="nf">save_games_to_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">games</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save games to cache file.&quot;&quot;&quot;</span>
+        <span class="n">cache_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;last_update&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+            <span class="s1">&#39;games&#39;</span><span class="p">:</span> <span class="n">games</span>
+        <span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">cache_data</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">games</span><span class="p">)</span><span class="si">}</span><span class="s2"> games to cache&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error saving to cache: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_player_archives</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch all game archives for the player.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">archives</span> <span class="o">=</span> <span class="n">get_player_game_archives</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;archives&#39;</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">archives</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error fetching archives: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">download_new_games</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached_data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download new games and merge with cached games.&quot;&quot;&quot;</span>
+        <span class="n">archives</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_player_archives</span><span class="p">()</span>
+        <span class="n">all_games</span> <span class="o">=</span> <span class="n">cached_data</span><span class="p">[</span><span class="s1">&#39;games&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Create a set of existing game IDs for quick lookup</span>
+        <span class="n">existing_game_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">game</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">game</span> <span class="ow">in</span> <span class="n">all_games</span><span class="p">}</span>
+        <span class="n">new_games</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">archive</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">archives</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing archives&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">year_month</span> <span class="o">=</span> <span class="n">archive</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+                <span class="n">games</span> <span class="o">=</span> <span class="n">get_player_games_by_month</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                                                  <span class="nb">int</span><span class="p">(</span><span class="n">year_month</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                                  <span class="nb">int</span><span class="p">(</span><span class="n">year_month</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;games&#39;</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">game</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">game</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_game_ids</span><span class="p">:</span>
+                        <span class="n">new_games</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">game</span><span class="p">)</span>
+                        <span class="n">all_games</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">game</span><span class="p">)</span>
+                        <span class="n">existing_game_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">game</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">])</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing archive </span><span class="si">{</span><span class="n">archive</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+
+        <span class="k">if</span> <span class="n">new_games</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">new_games</span><span class="p">)</span><span class="si">}</span><span class="s2"> new games&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_games_to_cache</span><span class="p">(</span><span class="n">all_games</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">all_games</span>
+
+    <span class="k">def</span> <span class="nf">moves_to_pgn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moves</span><span class="p">,</span> <span class="n">annotations</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert moves to PGN with annotations.&quot;&quot;&quot;</span>
+        <span class="n">pgn_moves</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">move</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">moves</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">pgn_moves</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">move</span><span class="o">.</span><span class="n">uci</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pgn_moves</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">move</span><span class="o">.</span><span class="n">uci</span><span class="p">())</span>
+
+            <span class="c1"># Add annotation if it exists for this move</span>
+            <span class="k">for</span> <span class="n">move_num</span><span class="p">,</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="n">annotations</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">move_num</span> <span class="o">==</span> <span class="p">(</span><span class="n">i</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">pgn_moves</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">annotation</span>
+
+        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pgn_moves</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">print_repertoire</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print repertoire with analysis.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Unique lines in repertoire:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">move_number</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">unique_lines</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">move_number</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">unique_lines</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Conflicts found:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">position</span><span class="p">,</span> <span class="n">variations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">variations</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Group variations by next move</span>
+                <span class="n">moves_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variations</span><span class="p">:</span>
+                    <span class="n">moves</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="s1">&#39;moves&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">last_move</span> <span class="o">=</span> <span class="n">moves</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">moves_dict</span><span class="p">[</span><span class="n">last_move</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;full_line&#39;</span><span class="p">:</span> <span class="n">var</span><span class="p">[</span><span class="s1">&#39;moves&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">var</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="n">var</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;eval&#39;</span><span class="p">:</span> <span class="n">var</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eval&#39;</span><span class="p">)</span>
+                    <span class="p">})</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">moves_dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Position after: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">moves_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;full_line&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Different moves played in this position:&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Sort variations by evaluation</span>
+                    <span class="n">sorted_moves</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">moves_dict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                                          <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;eval&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                                              <span class="n">g</span><span class="p">[</span><span class="s1">&#39;eval&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;-inf&#39;</span><span class="p">),</span>
+                                          <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">move</span><span class="p">,</span> <span class="n">games</span> <span class="ow">in</span> <span class="n">sorted_moves</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Move: </span><span class="si">{</span><span class="n">move</span><span class="si">}</span><span class="s2"> (Evaluation: </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;eval&#39;</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">games</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;eval&#39;</span><span class="p">]</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Games:&quot;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">game</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+                            <span class="n">date_str</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">game</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">game</span><span class="p">[</span>
+                                <span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;Unknown date&#39;</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    - </span><span class="si">{</span><span class="n">game</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">date_str</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">build_repertoire</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build repertoire with engine analysis.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">chess</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">SimpleEngine</span><span class="o">.</span><span class="n">popen_uci</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine_path</span><span class="p">)</span>
+            <span class="n">cached_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_cached_games</span><span class="p">()</span>
+            <span class="n">all_games</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download_new_games</span><span class="p">(</span><span class="n">cached_data</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">game</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">all_games</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Building repertoire&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">process_game</span><span class="p">(</span><span class="n">game</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Build a chess repertoire from a player</span><span class="se">\&#39;</span><span class="s1">s games&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--username&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Chess.com username&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--color&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">],</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Color to build repertoire for&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--max-moves&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Maximum number of moves to include (default: 15)&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--cache-dir&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Directory to store cached games (default: cache)&#39;</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="n">Client</span><span class="o">.</span><span class="n">request_config</span><span class="p">[</span><span class="s2">&quot;headers&quot;</span><span class="p">][</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Chess Repertoire Builder v1.0 &quot;</span>
+        <span class="s2">&quot;Contact me at volodjah@proton.me&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">builder</span> <span class="o">=</span> <span class="n">RepertoireBuilder</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">max_moves</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">)</span>
+    <span class="n">builder</span><span class="o">.</span><span class="n">build_repertoire</span><span class="p">()</span>
+    <span class="n">builder</span><span class="o">.</span><span class="n">print_repertoire</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+
+<p>And the hacky <span class="caps">PGN</span>&nbsp;filter:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">chess.pgn</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Move</span><span class="p">:</span>
+    <span class="n">move</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">cpl</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">better_move</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">MovePair</span><span class="p">:</span>
+    <span class="n">number</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">white</span><span class="p">:</span> <span class="n">Move</span>
+    <span class="n">black</span><span class="p">:</span> <span class="n">Move</span>
+
+
+<span class="k">class</span> <span class="nc">PGNParser</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span>
+
+    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgn_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split into tokens while preserving annotations.&quot;&quot;&quot;</span>
+        <span class="c1"># First, normalize the string</span>
+        <span class="n">pgn_str</span> <span class="o">=</span> <span class="n">pgn_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;}}.&#39;</span><span class="p">,</span> <span class="s1">&#39;} }.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Split on spaces while preserving annotation structure</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_token</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">in_annotation</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">pgn_str</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">char</span><span class="o">.</span><span class="n">isspace</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">in_annotation</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">current_token</span><span class="p">:</span>
+                    <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_token</span><span class="p">))</span>
+                    <span class="n">current_token</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">current_token</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s1">&#39;{&#39;</span><span class="p">:</span>
+                    <span class="n">in_annotation</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s1">&#39;}&#39;</span><span class="p">:</span>
+                    <span class="n">in_annotation</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">current_token</span><span class="p">:</span>
+            <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_token</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">tokens</span>
+
+    <span class="k">def</span> <span class="nf">parse_move_with_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">start_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Move</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a move and its annotations.&quot;&quot;&quot;</span>
+        <span class="n">move</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="n">start_idx</span><span class="p">]</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">cpl</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">better_move</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">while</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;{CPL:&#39;</span><span class="p">):</span>
+                <span class="n">cpl</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;CPL:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;}&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;{Better&#39;</span><span class="p">):</span>
+                <span class="n">better_move</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;was&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;}&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">Move</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="n">cpl</span><span class="p">,</span> <span class="n">better_move</span><span class="p">),</span> <span class="n">idx</span>
+
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgn_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">pgn_str</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+            <span class="c1"># Handle move numbers</span>
+            <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">move_num</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">move_num</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="c1"># Parse white&#39;s move</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+                    <span class="n">white_move</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_move_with_annotations</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">white_move</span><span class="o">.</span><span class="n">move</span><span class="p">)</span>  <span class="c1"># No annotations for white if we&#39;re black</span>
+
+                <span class="c1"># Parse black&#39;s move</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+                    <span class="n">black_move</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_move_with_annotations</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="n">move_str</span> <span class="o">=</span> <span class="n">black_move</span><span class="o">.</span><span class="n">move</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">==</span> <span class="s1">&#39;black&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">black_move</span><span class="o">.</span><span class="n">cpl</span><span class="p">:</span>
+                            <span class="n">move_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="se">{{</span><span class="s2">CPL: </span><span class="si">{</span><span class="n">black_move</span><span class="o">.</span><span class="n">cpl</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+                        <span class="k">if</span> <span class="n">black_move</span><span class="o">.</span><span class="n">better_move</span><span class="p">:</span>
+                            <span class="n">move_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="se">{{</span><span class="s2">Better was </span><span class="si">{</span><span class="n">black_move</span><span class="o">.</span><span class="n">better_move</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">move_str</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">clean_annotations</span><span class="p">(</span><span class="n">pgn_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;black&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">PGNParser</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">pgn_str</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PGNFilter</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">is_sicilian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game_str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if our first move was c5 (if Black) or opponent&#39;s first move was c5 (if White)&quot;&quot;&quot;</span>
+        <span class="c1"># Remove all annotations first</span>
+        <span class="n">clean_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\{[^}]*\}&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">game_str</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">==</span> <span class="s1">&#39;black&#39;</span><span class="p">:</span>
+            <span class="c1"># Look for Black&#39;s first move being c5</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;1\.\s*\S+\s+(c7c5|c5)&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Look for White&#39;s first move being e4 and Black responding with c5</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;1\.\s*(e2e4|e4)\s+(c7c5|c5)&#39;</span>
+
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">clean_str</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Filter PGN file for Sicilian Defense games&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;input_file&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Input PGN file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;output_file&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Output PGN file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--color&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Color to preserve annotations for&#39;</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="n">pgn_filter</span> <span class="o">=</span> <span class="n">PGNFilter</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">color</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c1"># Split into individual games if multiple games exist</span>
+    <span class="n">games</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">sicilian_games</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">non_sicilian_games</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">game</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">game</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>  <span class="c1"># Only process non-empty games</span>
+            <span class="k">if</span> <span class="n">pgn_filter</span><span class="o">.</span><span class="n">is_sicilian</span><span class="p">(</span><span class="n">game</span><span class="p">):</span>
+                <span class="c1"># Here&#39;s where we were missing the call to clean_annotations</span>
+                <span class="n">cleaned_game</span> <span class="o">=</span> <span class="n">clean_annotations</span><span class="p">(</span><span class="n">game</span><span class="p">)</span>
+                <span class="n">sicilian_games</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cleaned_game</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">non_sicilian_games</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">game</span><span class="p">)</span>
+
+    <span class="c1"># Write filtered games to output file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sicilian_games</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">games</span><span class="p">)</span><span class="si">}</span><span class="s2"> games&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sicilian_games</span><span class="p">)</span><span class="si">}</span><span class="s2"> Sicilian games&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Non-Sicilian games (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">non_sicilian_games</span><span class="p">)</span><span class="si">}</span><span class="s2">):&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;for i, game in enumerate(non_sicilian_games, 1):</span>
+<span class="sd">        print(f&quot;\nGame {i}:&quot;)</span>
+<span class="sd">        print(game)</span>
+<span class="sd">        print(&quot;-&quot; * 80)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Note: This is a proof of concept. The script requires a local Stockfish&nbsp;installation.</p>
+	</div>
+
+	<div id="related-articles">
+		<a href="/chessdotcom-python-game-review.html" id="prev-neighbour">Automated Chess.com Game Review Extraction Using Python &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com">Pelican</a> (<a href="https://github.com/iKevinY/pneumatic">Pneumatic Theme</a>) and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>
