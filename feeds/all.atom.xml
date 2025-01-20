@@ -14,8 +14,9 @@
 &lt;/div&gt;
 &lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
 &lt;p&gt;Have you ever spent hours memorizing chess opening lines, only to fall apart when your opponent deviates from the book? You&amp;#8217;re not&amp;nbsp;alone.&lt;/p&gt;
-&lt;p&gt;Chess books teach openings assuming perfect play from both sides. Reality is different, and chess books are boring anyway. Recently, I&amp;#8217;ve discovered GMs such as Hansen and Aman (chessbrah) doing &lt;a href="https://www.youtube.com/watch?v=rCZrddCQWY8&amp;amp;list=PLUjxDD7HNNTjVEZ_1I8E28uav9t_ltDKX"&gt;speedruns&lt;/a&gt; on &lt;em&gt;chess.com&lt;/em&gt; and streaming their games to &lt;em&gt;Twitch&lt;/em&gt; / &lt;em&gt;YouTube&lt;/em&gt;. The cool thing is they show how to handle all kinds of responses, from beginner mistakes to decent moves, across different rating levels&amp;nbsp;(400-2300).&lt;/p&gt;
-&lt;p&gt;This is valuable data we can extract, and then use to practice and accelerate our learning&amp;nbsp;rate. &lt;/p&gt;
+&lt;p&gt;Chess books teach openings assuming perfect play from both sides. Reality is different, and chess books are boring&amp;nbsp;anyway. &lt;/p&gt;
+&lt;p&gt;I&amp;#8217;ve stumbled upon GMs such as Hansen and Aman (chessbrah) doing &lt;a href="https://www.youtube.com/watch?v=rCZrddCQWY8&amp;amp;list=PLUjxDD7HNNTjVEZ_1I8E28uav9t_ltDKX"&gt;speedruns&lt;/a&gt; on &lt;em&gt;chess.com&lt;/em&gt;. They create new accounts starting at lower ratings (400 or 800 Elo) and climb their way up to 2000 Elo while streaming their games to &lt;em&gt;Twitch&lt;/em&gt; / &lt;em&gt;YouTube&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Since these games are still available on &lt;em&gt;chess.com&lt;/em&gt;, we&amp;#8217;ve got a goldmine of data we can use to practice and speed up our&amp;nbsp;improvement. &lt;/p&gt;
 &lt;p&gt;Now you might be wondering two&amp;nbsp;things:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;What&amp;#8217;s the point of checking out these moves instead of just using the Game&amp;nbsp;Review?&lt;/li&gt;
@@ -40,10 +41,10 @@
 &lt;/ol&gt;
 &lt;h2 id="technical-implementation"&gt;Technical&amp;nbsp;Implementation&lt;/h2&gt;
 &lt;p&gt;The script takes a username and color as input. For each game:
-- Check if the target player played target color
-- Extract moves up to move 15 (this can be configured)
-- Run engine analysis on the player&amp;#8217;s moves
-- Store &lt;span class="caps"&gt;CPL&lt;/span&gt; (centipawn loss) and better moves if&amp;nbsp;any&lt;/p&gt;
+* Check if the target player played target color
+* Extract moves up to move 15 (this can be configured)
+* Run engine analysis on the player&amp;#8217;s moves
+* Store &lt;span class="caps"&gt;CPL&lt;/span&gt; (centipawn loss) and better moves if&amp;nbsp;any&lt;/p&gt;
 &lt;p&gt;Example of analysis&amp;nbsp;output:&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;Proc&lt;/span&gt;&lt;span class="nv"&gt;essed&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;182&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;games&lt;/span&gt;
 &lt;span class="nf"&gt;Found&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;106&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;Sicilian&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;games&lt;/span&gt;
@@ -73,9 +74,9 @@ Unique&lt;span class="w"&gt; &lt;/span&gt;lines&lt;span class="w"&gt; &lt;/span&
 &lt;p&gt;Since it took 13 minutes to analyze the 360 games played by Aman and I didn&amp;#8217;t want to wait again, I decided to ask Claude to write a parser for the resulting &lt;span class="caps"&gt;PGN&lt;/span&gt; and filter out games where Aman did not play &lt;span class="caps"&gt;C7C5&lt;/span&gt; (a quick heuristic to find the Taimanov games). However, for more realistic scenarios, you might want to write a proper filter to classify openings, since many games can start with &lt;span class="caps"&gt;C7C5&lt;/span&gt; and not be a Sicilian Taimanov at&amp;nbsp;all.&lt;/p&gt;
 &lt;h2 id="results"&gt;Results&lt;/h2&gt;
 &lt;p&gt;For each position, we get:
-- The move played
-- Centipawn loss
-- Better alternatives if the move wasn&amp;#8217;t&amp;nbsp;optimal&lt;/p&gt;
+* The move played
+* Centipawn loss
+* Better alternatives if the move wasn&amp;#8217;t&amp;nbsp;optimal&lt;/p&gt;
 &lt;h3 id="side-quest-1"&gt;Side quest&amp;nbsp;1&lt;/h3&gt;
 &lt;p&gt;For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. Here is an overview (made them unique to have a quick oerview of the different&amp;nbsp;scores)&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;grep&lt;span class="w"&gt; &lt;/span&gt;-o&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;CPL: [0-9.]*&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;output.pgn&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;cut&lt;span class="w"&gt; &lt;/span&gt;-d&lt;span class="s1"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;-f2&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;sort&lt;span class="w"&gt; &lt;/span&gt;-nr&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;uniq&lt;span class="w"&gt;                                                                                                                                                  &lt;/span&gt;

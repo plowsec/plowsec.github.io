@@ -82,8 +82,9 @@
 </div>
 <h2 id="introduction">Introduction</h2>
 <p>Have you ever spent hours memorizing chess opening lines, only to fall apart when your opponent deviates from the book? You&#8217;re not&nbsp;alone.</p>
-<p>Chess books teach openings assuming perfect play from both sides. Reality is different, and chess books are boring anyway. Recently, I&#8217;ve discovered GMs such as Hansen and Aman (chessbrah) doing <a href="https://www.youtube.com/watch?v=rCZrddCQWY8&amp;list=PLUjxDD7HNNTjVEZ_1I8E28uav9t_ltDKX">speedruns</a> on <em>chess.com</em> and streaming their games to <em>Twitch</em> / <em>YouTube</em>. The cool thing is they show how to handle all kinds of responses, from beginner mistakes to decent moves, across different rating levels&nbsp;(400-2300).</p>
-<p>This is valuable data we can extract, and then use to practice and accelerate our learning&nbsp;rate. </p>
+<p>Chess books teach openings assuming perfect play from both sides. Reality is different, and chess books are boring&nbsp;anyway. </p>
+<p>I&#8217;ve stumbled upon GMs such as Hansen and Aman (chessbrah) doing <a href="https://www.youtube.com/watch?v=rCZrddCQWY8&amp;list=PLUjxDD7HNNTjVEZ_1I8E28uav9t_ltDKX">speedruns</a> on <em>chess.com</em>. They create new accounts starting at lower ratings (400 or 800 Elo) and climb their way up to 2000 Elo while streaming their games to <em>Twitch</em> / <em>YouTube</em>.</p>
+<p>Since these games are still available on <em>chess.com</em>, we&#8217;ve got a goldmine of data we can use to practice and speed up our&nbsp;improvement. </p>
 <p>Now you might be wondering two&nbsp;things:</p>
 <ol>
 <li>What&#8217;s the point of checking out these moves instead of just using the Game&nbsp;Review?</li>
@@ -108,10 +109,10 @@
 </ol>
 <h2 id="technical-implementation">Technical&nbsp;Implementation</h2>
 <p>The script takes a username and color as input. For each game:
-- Check if the target player played target color
-- Extract moves up to move 15 (this can be configured)
-- Run engine analysis on the player&#8217;s moves
-- Store <span class="caps">CPL</span> (centipawn loss) and better moves if&nbsp;any</p>
+* Check if the target player played target color
+* Extract moves up to move 15 (this can be configured)
+* Run engine analysis on the player&#8217;s moves
+* Store <span class="caps">CPL</span> (centipawn loss) and better moves if&nbsp;any</p>
 <p>Example of analysis&nbsp;output:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">Proc</span><span class="nv">essed</span><span class="w"> </span><span class="mi">182</span><span class="w"> </span><span class="nv">games</span>
 <span class="nf">Found</span><span class="w"> </span><span class="mi">106</span><span class="w"> </span><span class="nv">Sicilian</span><span class="w"> </span><span class="nv">games</span>
@@ -141,9 +142,9 @@ Unique<span class="w"> </span>lines<span class="w"> </span><span class="k">in</s
 <p>Since it took 13 minutes to analyze the 360 games played by Aman and I didn&#8217;t want to wait again, I decided to ask Claude to write a parser for the resulting <span class="caps">PGN</span> and filter out games where Aman did not play <span class="caps">C7C5</span> (a quick heuristic to find the Taimanov games). However, for more realistic scenarios, you might want to write a proper filter to classify openings, since many games can start with <span class="caps">C7C5</span> and not be a Sicilian Taimanov at&nbsp;all.</p>
 <h2 id="results">Results</h2>
 <p>For each position, we get:
-- The move played
-- Centipawn loss
-- Better alternatives if the move wasn&#8217;t&nbsp;optimal</p>
+* The move played
+* Centipawn loss
+* Better alternatives if the move wasn&#8217;t&nbsp;optimal</p>
 <h3 id="side-quest-1">Side quest&nbsp;1</h3>
 <p>For my own curiosity, I checked the mistakes made by Aman in the first 15 moves across his 106 Taimanov games. Here is an overview (made them unique to have a quick oerview of the different&nbsp;scores)</p>
 <div class="codehilite"><pre><span></span><code>grep<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;CPL: [0-9.]*&quot;</span><span class="w"> </span>output.pgn<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">&#39; &#39;</span><span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-nr<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w">                                                                                                                                                  </span>
